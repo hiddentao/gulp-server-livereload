@@ -140,7 +140,7 @@ module.exports = function(options) {
     webserver.close();
 
     if (config.livereload.enable) {
-      config.livereload.io.close();
+      config.livereload.io.emit('close');
     }
   });
 

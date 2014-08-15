@@ -1,3 +1,4 @@
+var path = require('path');
 var request = require('supertest');
 var webserver = require('../src');
 var File = require('gulp-util').File;
@@ -5,40 +6,38 @@ var File = require('gulp-util').File;
 // Some configuration to enable https testing
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
-describe('gulp-webserver', function() {
+describe('gulp-server-livereload', function() {
 
   var stream;
 
   var rootDir = new File({
-    path: __dirname + '/fixtures'
+    path: path.join(__dirname, 'fixtures')
   });
 
   var directoryIndexMissingDir = new File({
-    path: __dirname + '/fixtures/directoryIndexMissing'
+    path: path.join(__dirname, 'fixtures/directoryIndexMissing')
   });
 
   afterEach(function() {
     stream.emit('kill');
   });
 
-  it('should work with default options', function(done) {
 
+  it('should work with default options', function(done) {
     stream = webserver();
 
-    stream.write(rootDir);
+    stream.write(rootDir, function(err) {
+      if (err) return done(err);
 
-    request('http://localhost:8000')
-      .get('/')
-      .expect(200, /Hello World/)
-      .end(function(err) {
-        if (err) return done(err);
-        done(err);
-      });
-
+      request('http://localhost:8000')
+        .get('/')
+        .expect(200, /Hello World/)
+        .end(done);      
+    });
   });
 
-  it('should work with custom port', function(done) {
 
+  it('should work with custom port', function(done) {
     stream = webserver({
       port: 1111
     });
@@ -52,11 +51,10 @@ describe('gulp-webserver', function() {
         if (err) return done(err);
         done(err);
       });
-
   });
 
-  it('should work with custom host', function(done) {
 
+  it('should work with custom host', function(done) {
     stream = webserver({
       host: '0.0.0.0'
     });
@@ -70,11 +68,10 @@ describe('gulp-webserver', function() {
         if (err) return done(err);
         done(err);
       });
-
   });
 
-  it('should work with https', function(done) {
 
+  it('should work with https', function(done) {
     stream = webserver({
       https: true
     });
@@ -88,11 +85,10 @@ describe('gulp-webserver', function() {
         if (err) return done(err);
         done(err);
       });
-
   });
 
-  it('should work with https and a custom certificate', function(done) {
 
+  it('should work with https and a custom certificate', function(done) {
     stream = webserver({
       https: {
         key: __dirname + '/../ssl/dev-key.pem',
@@ -109,11 +105,10 @@ describe('gulp-webserver', function() {
         if (err) return done(err);
         done(err);
       });
-
   });
 
-  it('should fall back to default.html', function(done) {
 
+  it('should fall back to default.html', function(done) {
     stream = webserver({
       fallback: 'default.html'
     });
@@ -127,11 +122,10 @@ describe('gulp-webserver', function() {
         if (err) return done(err);
         done(err);
       });
-
   });
 
-  it('should show a directory listing when the shorthand setting is enabled', function(done) {
 
+  it('should show a directory listing when the shorthand setting is enabled', function(done) {
     stream = webserver({
       directoryListing: true
     });
@@ -145,11 +139,10 @@ describe('gulp-webserver', function() {
         if (err) return done(err);
         done(err);
       });
-
   });
 
-  it('should not show a directory listing when the shorthand setting is disabled', function(done) {
 
+  it('should not show a directory listing when the shorthand setting is disabled', function(done) {
     stream = webserver({
       directoryListing: false
     });
@@ -163,11 +156,10 @@ describe('gulp-webserver', function() {
         if (err) return done(err);
         done(err);
       });
-
   });
 
-  it('should start the livereload server when the shorthand setting is enabled', function(done) {
 
+  it('should start the livereload server when the shorthand setting is enabled', function(done) {
     stream = webserver({
       livereload: true
     });
@@ -189,8 +181,8 @@ describe('gulp-webserver', function() {
       });
   });
 
-  it('should not start the livereload server when the shorthand setting is disabled', function(done) {
 
+  it('should not start the livereload server when the shorthand setting is disabled', function(done) {
     stream = webserver({
       livereload: false
     });
@@ -218,5 +210,6 @@ describe('gulp-webserver', function() {
 
       });
   });
+
 
 });
