@@ -1,16 +1,17 @@
 var through = require('through2');
-var gutil = require('gulp-util');
-var http = require('http');
-var https = require('https');
-var connect = require('connect');
-var serveStatic = require('serve-static');
-var watch = require('node-watch');
-var fs = require('fs');
-var serveIndex = require('serve-index');
-var path = require('path');
-var open = require('open');
-var enableMiddlewareShorthand = require('./enableMiddlewareShorthand');
-var socket = require('socket.io');
+  gutil = require('gulp-util'),
+  http = require('http'),
+  https = require('https'),
+  inject = require('connect-inject'),
+  connect = require('connect'),
+  watch = require('node-watch'),
+  fs = require('fs'),
+  serveIndex = require('serve-index'),
+  serveStatic = require('serve-static'),
+  path = require('path'),
+  open = require('open'),
+  enableMiddlewareShorthand = require('./enableMiddlewareShorthand'),
+  socket = require('socket.io');
 
 
 module.exports = function(options) {
@@ -22,7 +23,7 @@ module.exports = function(options) {
      **/
     host: 'localhost',
     port: 8000,
-    fallback: false,
+    defaultFile: 'index.html',
     https: false,
     open: false,
 
@@ -42,7 +43,8 @@ module.exports = function(options) {
 
     // Middleware: Livereload
     livereload: {
-      enable:false
+      enable:false,
+      port: 32579,
     },
 
     // Middleware: Directory listing
@@ -57,7 +59,7 @@ module.exports = function(options) {
 
   // Deep extend user provided options over the all of the defaults
   // Allow shorthand syntax, using the enable property as a flag
-  var config = enableMiddlewareShorthand(defaults, options, ['directoryListing','livereload']);
+  var config = enableMiddlewareShorthand(defaults, options, ['directoryListing', 'livereload']);
 
   var openInBrowser = function () {
     if (config.open === false) return;
@@ -65,11 +67,33 @@ module.exports = function(options) {
   };
 
   // connect app
-  var app = connect()
+  var app = connect();
 
   //  directory listing
   if (config.directoryListing.enable) {
-      app.use(serveIndex(path.resolve(config.directoryListing.path), config.directoryListing.options));
+    app.use(serveIndex(path.resolve(config.directoryListing.path), config.directoryListing.options));
+  }
+
+  // socket.io
+  if (config.livereload.enable) {
+    var ioServerOrigin = 'http://' + config.host + ':' + config.livereload.port;
+
+    app.use(inject({
+      snippet: "<script type=\"text/javascript\" src=\"" + ioServerOrigin +"/socket.io.js\"></script>"
+        + "<script>var ___socket = io.connect('" + ioServerOrigin +"'); ___socket.on('reload', function() { location.reload(); });</script>",
+      rules: [{
+        match: /<\/body>/,
+        fn: function(w, s) {
+          return s + w;
+        }
+      }]
+    }));
+
+    var io = config.livereload.io = socket();
+    io.serveClient(true);
+    io.path("");
+    io.on('connection', function(socket){});
+    io.listen(config.livereload.port);
   }
 
   // http server
@@ -86,39 +110,28 @@ module.exports = function(options) {
     webserver = http.createServer(app);
   }
 
-  // socket.io
-  var io = null;
-  if (config.livereload.enable) {
-    io = require('socket.io').listen(webserver);
-
-    // TODO: inject client JS
-  }
-
   // Create server
   var stream = through.obj(function(file, enc, callback) {
-    app.use(serveStatic(file.path));
-
-    if (config.fallback) {
-      var fallbackFile = file.path + '/' + config.fallback;
-
-      if (fs.existsSync(fallbackFile)) {
-        app.use(function(req, res) {
-          fs.createReadStream(fallbackFile).pipe(res);
-        });
-      }
-    }
+    app.use(serveStatic(file.path, {
+      index: (config.directoryListing.enable ? false : config.defaultFile)
+    }));
 
     if (config.livereload.enable) {
       watch(file.path, function(filename) {
-        if (io) {
-          io.sockets.emit('reload');
-        }
+        config.livereload.io.sockets.emit('reload');
       });
     }
 
     this.push(file);
 
     callback();
+  }, function(cb) {
+    // start the web server
+    webserver.listen(config.port, config.host, openInBrowser);
+
+    gutil.log('Webserver started at', gutil.colors.cyan('http' + (config.https ? 's' : '') + '://' + config.host + ':' + config.port));
+
+    cb();
   });
 
 
@@ -127,14 +140,9 @@ module.exports = function(options) {
     webserver.close();
 
     if (config.livereload.enable) {
-      lrServer.close();
+      config.livereload.io.close();
     }
   });
-
-  // start the web server
-  webserver.listen(config.port, config.host, openInBrowser);
-
-  gutil.log('Webserver started at', gutil.colors.cyan('http' + (config.https ? 's' : '') + '://' + config.host + ':' + config.port));
 
   return stream;
 };
