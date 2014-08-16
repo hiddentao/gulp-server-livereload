@@ -37,7 +37,7 @@ Key | Type | Default | Description |
 --- | --- | --- | --- |
 `host` | String | `localhost` | hostname of the webserver
 `port` | Number | `8000` | port of the webserver
-`livereload` | Boolean/Object | `false` | whether to use livereload. For advanced options, provide an object. You can use the `port` property to set a custom live reload port (default is `32579`).
+`livereload` | Boolean/Object | `false` | whether to use livereload. For advanced options, provide an object. You can use the `port` property to set a custom live reload port (default is `35729`).
 `directoryListing` | Boolean/Object | `false` | whether to display a directory listing. For advanced options, provide an object. You can use the `path property to set a custom path or the `options` property to set custom [serve-index](https://github.com/expressjs/serve-index) options.
 `defaultFile` | String | `index.html` | default file to show when root URL is requested. If `directoryListing` is enabled then this gets disabled.
 `open` | Boolean/Object | `false` | open the localhost server in the browser

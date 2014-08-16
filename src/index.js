@@ -43,8 +43,8 @@ module.exports = function(options) {
 
     // Middleware: Livereload
     livereload: {
-      enable:false,
-      port: 32579,
+      enable: false,
+      port: 35729,
     },
 
     // Middleware: Directory listing
@@ -93,7 +93,9 @@ module.exports = function(options) {
     io.serveClient(true);
     io.path("");
     io.on('connection', function(socket){});
-    io.listen(config.livereload.port);
+    io.attach(
+      (config.livereload.ioServer = http.Server().listen(config.livereload.port))
+    );
   }
 
   // http server
@@ -125,13 +127,12 @@ module.exports = function(options) {
     this.push(file);
 
     callback();
-  }, function(cb) {
+  })
+  .on('data', function() {
     // start the web server
     webserver.listen(config.port, config.host, openInBrowser);
 
     gutil.log('Webserver started at', gutil.colors.cyan('http' + (config.https ? 's' : '') + '://' + config.host + ':' + config.port));
-
-    cb();
   });
 
 
@@ -140,7 +141,7 @@ module.exports = function(options) {
     webserver.close();
 
     if (config.livereload.enable) {
-      config.livereload.io.emit('close');
+      config.livereload.ioServer.close();
     }
   });
 

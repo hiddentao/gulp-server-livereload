@@ -108,15 +108,15 @@ describe('gulp-server-livereload', function() {
   });
 
 
-  it('should fall back to default.html', function(done) {
+  it('should show default.html', function(done) {
     stream = webserver({
-      fallback: 'default.html'
+      defaultFile: 'default.html'
     });
 
     stream.write(rootDir);
 
     request('http://localhost:8000')
-      .get('/some/random/path/')
+      .get('/')
       .expect(200, /Default/)
       .end(function(err) {
         if (err) return done(err);
@@ -173,8 +173,8 @@ describe('gulp-server-livereload', function() {
         if (err) return done(err);
       });
     request('http://localhost:35729')
-      .get('/')
-      .expect(200,/tinylr/)
+      .get('/socket.io.js')
+      .expect(200,/socket\.io/)
       .end(function(err) {
         if (err) return done(err);
         done(err);
@@ -196,7 +196,7 @@ describe('gulp-server-livereload', function() {
         if (err) return done(err);
       });
     request('http://localhost:35729')
-      .get('/')
+      .get('/socket.io.js')
       .end(function(err) {
         if(err && err.code === "ECONNREFUSED") {
           done();
