@@ -26,6 +26,7 @@ module.exports = function(options) {
     defaultFile: 'index.html',
     https: false,
     open: false,
+    log: 'info',
 
     /**
      *
@@ -114,12 +115,23 @@ module.exports = function(options) {
 
   // Create server
   var stream = through.obj(function(file, enc, callback) {
+    if ('debug' === config.log) {
+      app.use(function(req, res, next) {
+        gutil.log(req.method + ' ' + req.url);
+
+        next();
+      });
+    }
+
+
     app.use(serveStatic(file.path, {
       index: (config.directoryListing.enable ? false : config.defaultFile)
     }));
 
     if (config.livereload.enable) {
       watch(file.path, function(filename) {
+        gutil.log('Livereload: file changed: ' + filename);
+
         config.livereload.io.sockets.emit('reload');
       });
     }
