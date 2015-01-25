@@ -81,7 +81,13 @@ module.exports = function(options) {
 
     app.use(inject({
       snippet: "<script type=\"text/javascript\" src=\"" + ioServerOrigin +"/socket.io.js\"></script>"
-        + "<script>var ___socket = io.connect('" + ioServerOrigin +"'); ___socket.on('reload', function() { location.reload(); });</script>",
+        + "<script type=\"text/javascript\">"
+        + "console.log('Connecting to livereload server..." + ioServerOrigin + "');"
+        + "var ___socket = io.connect('" + ioServerOrigin +"');"
+        + "___socket.on('connect', function() { console.log('Successfully connected to livereload server'); });"
+        + "___socket.on('connect_error', function(err) { console.log('Failed to connect to livereload server: ' + err); });"
+        + "___socket.on('reload', function() { location.reload(); });"
+        + "</script>",
       rules: [{
         match: /<\/body>/,
         fn: function(w, s) {
@@ -93,7 +99,9 @@ module.exports = function(options) {
     var io = config.livereload.io = socket();
     io.serveClient(true);
     io.path("");
-    io.on('connection', function(socket){});
+    io.on('connection', function(socket){
+      gutil.log('Livereload client connected');
+    });
     io.attach(
       (config.livereload.ioServer = http.Server().listen(config.livereload.port))
     );
