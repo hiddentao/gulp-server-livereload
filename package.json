@@ -25,19 +25,19 @@
   },
   "homepage": "https://github.com/hiddentao/gulp-server-livereload",
   "devDependencies": {
-    "mocha": "^1.20.1",
-    "supertest": "^0.13.0"
+    "mocha": "~1.20.1",
+    "supertest": "~0.13.0"
   },
   "dependencies": {
-    "connect": "^3.1.1",
-    "connect-inject": "^0.3.2",
-    "gulp-util": "^2.2.19",
-    "node-watch": "^0.3.4",
-    "node.extend": "^1.0.10",
-    "open": "^0.0.5",
-    "serve-index": "^1.1.4",
-    "serve-static": "^1.5.2",
-    "socket.io": "^1.0.6",
-    "through2": "^0.5.1"
+    "connect": "~3.1.1",
+    "connect-inject": "~0.3.2",
+    "gulp-util": "~2.2.19",
+    "node-watch": "~0.3.4",
+    "node.extend": "~1.0.10",
+    "open": "~0.0.5",
+    "serve-index": "~1.1.4",
+    "serve-static": "~1.5.2",
+    "socket.io": "~1.0.6",
+    "through2": "~0.5.1"
   }
 }
