@@ -87,6 +87,28 @@ module.exports = function(options) {
         + "___socket.on('connect', function() { console.log('Successfully connected to livereload server'); });"
         + "___socket.on('connect_error', function(err) { console.log('Failed to connect to livereload server: ' + err); });"
         + "___socket.on('reload', function() { location.reload(); });"
+        + "var ___console;"
+        + "if (typeof console !== 'undefined') {"
+        + "  ___console = console;"
+        + "}"
+        + "var console = {"
+        + "  info: function() {"
+        + "    ___socket.emit('console_info', arguments);"
+        + "    try { if (___console.info) ___console.info.apply(null, arguments); } catch(e) {}"
+        + "  },"
+        + "  log: function() {"
+        + "    ___socket.emit('console_log', arguments);"
+        + "    try { if (___console.log) ___console.log.apply(null, arguments); } catch(e) {}"
+        + "  },"
+        + "  warn: function() {"
+        + "    ___socket.emit('console_warn', arguments);"
+        + "    try { if (___console.warn) ___console.warn.apply(null, arguments); } catch(e) {}"
+        + "  },"
+        + "  error: function() {"
+        + "    ___socket.emit('console_error', arguments);"
+        + "    try { if (___console.error) ___console.error.apply(null, arguments); } catch(e) {}"
+        + "  }"
+        + "};"
         + "</script>",
       rules: [{
         match: /<\/body>/,
@@ -101,6 +123,43 @@ module.exports = function(options) {
     io.path("");
     io.on('connection', function(socket){
       gutil.log('Livereload client connected');
+      
+      socket.on('console_log', function(data){
+        var args = [
+          gutil.colors.green('log')
+        ];
+        for (var i in data) {
+          args.push(data[i]);
+        }
+        gutil.log.apply(null, args);
+      });
+      socket.on('console_warn', function(data){
+        var args = [
+          gutil.colors.yellow('warn')
+        ];
+        for (var i in data) {
+          args.push(data[i]);
+        }
+        gutil.log.apply(null, args);
+      });
+      socket.on('console_info', function(data){
+        var args = [
+          gutil.colors.cyan('info')
+        ];
+        for (var i in data) {
+          args.push(data[i]);
+        }
+        gutil.log.apply(null, args);
+      });
+      socket.on('console_error', function(data){
+        var args = [
+          gutil.colors.red('err')
+        ];
+        for (var i in data) {
+          args.push(data[i]);
+        }
+        gutil.log.apply(null, args);
+      });
     });
     io.attach(
       (config.livereload.ioServer = http.Server().listen(config.livereload.port))
