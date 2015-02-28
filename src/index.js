@@ -92,7 +92,6 @@ module.exports = function(options) {
       + "<script type=\"text/javascript\" src=\"" + ioServerOrigin +"/socket.io.js\"></script>"
       + "<script type=\"text/javascript\">"
       + "if (___require) { require = ___require; define = ___define }"
-      + "<script type=\"text/javascript\">"
       + "console.log('Connecting to livereload server..." + ioServerOrigin + "');"
       + "var ___socket = io.connect('" + ioServerOrigin +"');"
       + "___socket.on('connect', function() { console.log('Successfully connected to livereload server'); });"
