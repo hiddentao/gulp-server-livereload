@@ -27,6 +27,7 @@ module.exports = function(options) {
     https: false,
     open: false,
     log: 'info',
+    clientConsole: false,
 
     /**
      *
@@ -79,18 +80,20 @@ module.exports = function(options) {
   if (config.livereload.enable) {
     var ioServerOrigin = 'http://' + config.host + ':' + config.livereload.port;
 
-    app.use(inject({
-      snippet: "<script type=\"text/javascript\" src=\"" + ioServerOrigin +"/socket.io.js\"></script>"
-        + "<script type=\"text/javascript\">"
-        + "console.log('Connecting to livereload server..." + ioServerOrigin + "');"
-        + "var ___socket = io.connect('" + ioServerOrigin +"');"
-        + "___socket.on('connect', function() { console.log('Successfully connected to livereload server'); });"
-        + "___socket.on('connect_error', function(err) { console.log('Failed to connect to livereload server: ' + err); });"
-        + "___socket.on('reload', function() { location.reload(); });"
-        // sometimes socket.io fails to serialize arguments e.g. angular $state
-        // socket.io can't handle cyclic objects either
-        // some browsers don't have an .apply method on console methods
-        + "var console = {};"
+    var snippet = "<script type=\"text/javascript\" src=\"" + ioServerOrigin +"/socket.io.js\"></script>"
+      + "<script type=\"text/javascript\">"
+      + "console.log('Connecting to livereload server..." + ioServerOrigin + "');"
+      + "var ___socket = io.connect('" + ioServerOrigin +"');"
+      + "___socket.on('connect', function() { console.log('Successfully connected to livereload server'); });"
+      + "___socket.on('connect_error', function(err) { console.log('Failed to connect to livereload server: ' + err); });"
+      + "___socket.on('reload', function() { location.reload(); });"
+    ;
+
+    if (config.clientConsole) {
+      // sometimes socket.io fails to serialize arguments e.g. angular $state
+      // socket.io can't handle cyclic objects either
+      // some browsers don't have an .apply method on console methods
+      snippet += "var console = {};"
         + "(function(methods) {"
         + "    var methods = ['info','log','error','warn'];"
         + "    for (var i in methods) {"
@@ -108,7 +111,13 @@ module.exports = function(options) {
         + "        }(methods[i]))"
         + "    }"
         + "}())"
-        + "</script>",
+      ;
+    }
+
+    snippet += "</script>";
+
+    app.use(inject({
+      snippet: snippet,
       rules: [{
         match: /<\/body>/,
         fn: function(w, s) {

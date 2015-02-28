@@ -5,7 +5,7 @@ gulp-server-livereload [![Build Status](http://img.shields.io/travis/hiddentao/g
 
 **This is a fork of [gulp-webserver](https://github.com/schickling/gulp-webserver)**. This version uses [socket.io](http://socket.io) instead of [tiny-lr](https://github.com/mklabs/tiny-lr) so that the livereload mechanism works even if your browser does not support WebSockets (PhoneGap developers rejoice!).
 
-It also captures `window.console` output from the client-side and transmits it 
+It can also capture `window.console` output from the client-side and transmit it 
 to the back-end for display. This is useful for when testing from Phonegap, etc.
 
 ## Installation
@@ -47,6 +47,8 @@ Key | Type | Default | Description |
 `open` | Boolean/Object | `false` | open the localhost server in the browser
 `https` | Boolean/Object | `false` | whether to use https or not. By default, `gulp-webserver` provides you with a development certificate but you remain free to specify a path for your key and certificate by providing an object like this one: `{key: 'path/to/key.pem', cert: 'path/to/cert.pem'}`.
 `log` | String | `info` | If set to `debug` you will see all requests logged to the console.
+`clientConsole` | Boolean | `false` | whether to capture `window.console` output from the client and send it to the back-end for display.
+
 
 ## FAQ
 
