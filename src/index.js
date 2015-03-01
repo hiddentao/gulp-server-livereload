@@ -80,8 +80,18 @@ module.exports = function(options) {
   if (config.livereload.enable) {
     var ioServerOrigin = 'http://' + config.host + ':' + config.livereload.port;
 
-    var snippet = "<script type=\"text/javascript\" src=\"" + ioServerOrigin +"/socket.io.js\"></script>"
+    // socket.io won't load if requirejs is already loaded unless I disable it first
+    var snippet = "<script type=\"text/javascript\">"
+      + "var ___require, ___define;"
+      + "if (typeof require !== 'undefined' && typeof requirejs !== 'undefined' && require === requirejs) {"
+      + "    ___require = require;"
+      + "    ___define = define;"
+      + "    require = define = null;"
+      + "}"
+      + "</script>"
+      + "<script type=\"text/javascript\" src=\"" + ioServerOrigin +"/socket.io.js\"></script>"
       + "<script type=\"text/javascript\">"
+      + "if (___require) { require = ___require; define = ___define }"
       + "console.log('Connecting to livereload server..." + ioServerOrigin + "');"
       + "var ___socket = io.connect('" + ioServerOrigin +"');"
       + "___socket.on('connect', function() { console.log('Successfully connected to livereload server'); });"
@@ -93,7 +103,11 @@ module.exports = function(options) {
       // sometimes socket.io fails to serialize arguments e.g. angular $state
       // socket.io can't handle cyclic objects either
       // some browsers don't have an .apply method on console methods
-      snippet += "var console = {};"
+      snippet += "var ___console;"
+        + "if (typeof console !== 'undefined') {"
+        + " ___console = console;"
+        + "};"
+        + "var console = {};"
         + "(function(methods) {"
         + "    var methods = ['info','log','error','warn'];"
         + "    for (var i in methods) {"
