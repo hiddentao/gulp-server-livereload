@@ -4,6 +4,7 @@ var through = require('through2');
   https = require('https'),
   inject = require('connect-inject'),
   connect = require('connect'),
+  proxy = require('proxy-middleware');
   watch = require('node-watch'),
   fs = require('fs'),
   serveIndex = require('serve-index'),
@@ -12,6 +13,8 @@ var through = require('through2');
   open = require('open'),
   enableMiddlewareShorthand = require('./enableMiddlewareShorthand'),
   socket = require('socket.io');
+  url = require('url');
+  extend = require('node.extend');
 
 
 module.exports = function(options) {
@@ -47,6 +50,11 @@ module.exports = function(options) {
     livereload: {
       enable: false,
       port: 35729,
+      filter: function (filename) {
+        if (filename.match(/node_modules/)) {
+          return false;
+        } else { return true; }
+      }
     },
 
     // Middleware: Directory listing
@@ -56,7 +64,13 @@ module.exports = function(options) {
       enable: false,
       path: './',
       options: undefined
-    }
+    },
+
+    // Middleware: Proxy
+    // For possible options, see:
+    //  https://github.com/andrewrk/connect-proxy
+    proxies: []
+
   };
 
   // Deep extend user provided options over the all of the defaults
@@ -70,7 +84,15 @@ module.exports = function(options) {
 
   // connect app
   var app = connect();
-
+  // Proxy requests
+  for (var i = 0, len = config.proxies.length; i < len; i++) {
+    var proxyoptions = url.parse(config.proxies[i].target);
+    if (config.proxies[i].hasOwnProperty('options')) {
+      extend(proxyoptions, config.proxies[i].options);
+    }
+    app.use(config.proxies[i].source, proxy(proxyoptions));
+    gutil.log(config.proxies[i].source + ' is proxied.');
+  }
   //  directory listing
   if (config.directoryListing.enable) {
     app.use(serveIndex(path.resolve(config.directoryListing.path), config.directoryListing.options));
@@ -145,7 +167,7 @@ module.exports = function(options) {
     io.path("");
     io.on('connection', function(socket){
       gutil.log('Livereload client connected');
-      
+
       socket.on('console_log', function(data){
         var args = [
           gutil.colors.green('log')
