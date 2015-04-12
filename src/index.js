@@ -47,6 +47,13 @@ module.exports = function(options) {
     livereload: {
       enable: false,
       port: 35729,
+      filter: function(cb) {
+        return function(filename) {
+          if (!/node_modules/.test(filename)) {
+            cb(filename);
+          }
+        }
+      }
     },
 
     // Middleware: Directory listing
@@ -66,6 +73,7 @@ module.exports = function(options) {
   var openInBrowser = function () {
     if (config.open === false) return;
     open('http' + (config.https ? 's' : '') + '://' + config.host + ':' + config.port);
+    openInBrowser = undefined;
   };
 
   // connect app
@@ -218,11 +226,11 @@ module.exports = function(options) {
     }));
 
     if (config.livereload.enable) {
-      watch(file.path, function(filename) {
+      watch(file.path, config.livereload.filter(function(filename) {
         gutil.log('Livereload: file changed: ' + filename);
 
         config.livereload.io.sockets.emit('reload');
-      });
+      }));
     }
 
     this.push(file);

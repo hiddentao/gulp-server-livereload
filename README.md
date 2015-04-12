@@ -41,7 +41,7 @@ Key | Type | Default | Description |
 --- | --- | --- | --- |
 `host` | String | `localhost` | hostname of the webserver
 `port` | Number | `8000` | port of the webserver
-`livereload` | Boolean/Object | `false` | whether to use livereload. For advanced options, provide an object. You can use the `port` property to set a custom live reload port (default is `35729`).
+`livereload` | Boolean/Object | `false` | whether to use livereload. For advanced options, provide an object. You can use the `port` property to set a custom live reload port (default is `35729`) and the `filter` function to filter out files to watch (default filters out `node_modules`).
 `directoryListing` | Boolean/Object | `false` | whether to display a directory listing. For advanced options, provide an object. You can use the `path property to set a custom path or the `options` property to set custom [serve-index](https://github.com/expressjs/serve-index) options.
 `defaultFile` | String | `index.html` | default file to show when root URL is requested. If `directoryListing` is enabled then this gets disabled.
 `open` | Boolean/Object | `false` | open the localhost server in the browser
@@ -65,6 +65,28 @@ gulp.task('webserver', function() {
   gulp.src('app')
     .pipe(server({
       defaultFile: 'main.html'
+    }));
+});
+```
+
+#### How can I pass a custom filter to livereload?
+
+In the `livereload` object, set the `enable` to `true` and provide filter function in `filter`:
+
+```js
+gulp.task('webserver', function() {
+  gulp.src('app')
+    .pipe(server({
+      livereload: {
+        enable: true,
+        filter: function(cb) {
+          return function(filePath) {
+            if (!/node_modules/.test(filePath)) {
+              cb(filePath);
+            }
+          };
+        }
+      }
     }));
 });
 ```
