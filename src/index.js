@@ -1,4 +1,6 @@
-var through = require('through2');
+"use strict";
+
+var through = require('through2'),
   gutil = require('gulp-util'),
   http = require('http'),
   https = require('https'),
