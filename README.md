@@ -79,12 +79,8 @@ gulp.task('webserver', function() {
     .pipe(server({
       livereload: {
         enable: true,
-        filter: function(cb) {
-          return function(filePath) {
-            if (!/node_modules/.test(filePath)) {
-              cb(filePath);
-            }
-          };
+        filter: function(filePath, cb) {
+          cb( !(/node_modules/.test(filePath)) );
         }
       }
     }));
