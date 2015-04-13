@@ -1,6 +1,6 @@
 {
   "name": "gulp-server-livereload",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "Gulp plugin to run a local webserver with livereload enabled via socket.io",
   "main": "src/index.js",
   "scripts": {
