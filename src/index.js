@@ -188,7 +188,7 @@ module.exports = function(options) {
       });
     });
     io.attach(
-      (config.livereload.ioServer = http.Server().listen(config.livereload.port))
+      (config.livereload.ioServer = http.createServer().listen(config.livereload.port))
     );
   }
 
