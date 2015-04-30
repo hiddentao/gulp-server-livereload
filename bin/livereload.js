@@ -9,35 +9,19 @@ var opts = {
 	logLevel: 2
 };
 
-for (var i = process.argv.length-1; i >= 2; --i) {
-	var arg = process.argv[i];
-	if (arg.indexOf('--port=') > -1) {
-		var portString = arg.substring(7);
-		var portNumber = parseInt(portString, 10);
-		if (portNumber === portString) {
-			opts.port = portNumber;
-			process.argv.splice(i, 1);
-		}
-	}
-	else if (arg.indexOf('--open=') > -1) {
-		var path = arg.substring(7);
-		if (path.indexOf('/') !== 0) {
-			path = '/' + path;
-		}
-		opts.open = path;
-		process.argv.splice(i, 1);
-	}
-	else if (arg === '--no-browser') {
-		opts.open = false;
-		process.argv.splice(i, 1);
-	} else if (arg === '--quiet' || arg === '-q') {
-		opts.logLevel = 0;
-		process.argv.splice(i, 1);
-	} else if (arg === '--help' || arg === '-h') {
-		console.log('Usage: livereload [-h|--help] [-q|--quiet] ' +
-			'[--port=PORT] [--open=PATH] [--no-browser] [PATH]');
-		process.exit();
-	}
-}
+var program = require('commander');
+
+program
+  .version('1.2.4')
+  .option('-n, --no-browser', 'No Browser')
+  .option('-l, --log [type]', 'Log level [info]', 'info')
+  .option('-p, --port <n>', 'The port to run on', parseInt)
+  .parse(process.argv);
+
+opts.logLevel = program.log;
+if (program.noBrowser)
+	opts.open = false;
+if (program.port)
+	opts.port = program.port;
 
 fs.src('.').pipe(server(opts));
