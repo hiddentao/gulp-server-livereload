@@ -34,13 +34,35 @@ gulp.task('webserver', function() {
 
 If you run `gulp webserver` your browser should automatically open up to `http://localhost:8000` and show a directory listing of the `app` folder.
 
-Also, if you:
-`npm install -g gulp-server-livereload`
+### Command-line
 
-You can use the app directly from the command-line (example):
-`livereload --no-browser .`
+Install the package globally:
+
+```bash
+$ npm install -g gulp-server-livereload
+```
+
+Then you can run the `livereload` command to serve files out of the current folder. 
+Here are the available options:
+
+```bash
+$ livereload help
+
+  Usage: livereload [options]
+
+  Options:
+
+    -h, --help        output usage information
+    -V, --version     output the version number
+    -n, --no-browser  do not open the localhost server in a browser
+    -l, --log [type]  log level (default: info)
+    -p, --port <n>    the port to run on
+```
+
 
 ## Options
+
+_Note: not all of these options are currently available via the CLI executable_
 
 Key | Type | Default | Description |
 --- | --- | --- | --- |
