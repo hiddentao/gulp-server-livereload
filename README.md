@@ -5,7 +5,7 @@ gulp-server-livereload [![Build Status](http://img.shields.io/travis/hiddentao/g
 
 **This is a fork of [gulp-webserver](https://github.com/schickling/gulp-webserver)**. This version uses [socket.io](http://socket.io) instead of [tiny-lr](https://github.com/mklabs/tiny-lr) so that the livereload mechanism works even if your browser does not support WebSockets (PhoneGap developers rejoice!).
 
-It can also capture `window.console` output from the client-side and transmit it 
+It can also capture `window.console` output from the client-side and transmit it
 to the back-end for display. This is useful for when testing from Phonegap, etc.
 
 ## Installation
@@ -34,6 +34,11 @@ gulp.task('webserver', function() {
 
 If you run `gulp webserver` your browser should automatically open up to `http://localhost:8000` and show a directory listing of the `app` folder.
 
+Also, if you:
+`npm install -g gulp-server-livereload`
+
+You can use the app directly from the command-line (example):
+`livereload --no-browser .`
 
 ## Options
 
@@ -90,14 +95,3 @@ gulp.task('webserver', function() {
 ## License
 
 MIT - see LICENSE.md
-
-
-
-
-
-
-
-
-
-
-
