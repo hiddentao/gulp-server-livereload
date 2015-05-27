@@ -3,10 +3,16 @@ gulp-server-livereload [![Build Status](http://img.shields.io/travis/hiddentao/g
 
 > Gulp plugin to run a local webserver with live reload using socket.io
 
-**This is a fork of [gulp-webserver](https://github.com/schickling/gulp-webserver)**. This version uses [socket.io](http://socket.io) instead of [tiny-lr](https://github.com/mklabs/tiny-lr) so that the livereload mechanism works even if your browser does not support WebSockets (PhoneGap developers rejoice!).
+Serves a folder over HTTP and watch it for changes, telling the browser to 
+reload itself when a change happens.
+
+Uses [socket.io](http://socket.io) so that the livereload mechanism works even 
+if your browser does not support WebSockets (PhoneGap developers rejoice!).
 
 It can also capture `window.console` output from the client-side and transmit it
 to the back-end for display. This is useful for when testing from Phonegap, etc.
+
+This was originally a fork of [gulp-webserver](https://github.com/schickling/gulp-webserver).
 
 ## Installation
 

@@ -190,7 +190,7 @@ module.exports = function(options) {
       });
     });
     io.attach(
-      (config.livereload.ioServer = http.createServer().listen(config.livereload.port))
+      (config.livereload.ioServer = http.createServer().listen(config.livereload.port, config.host))
     );
   }
 
