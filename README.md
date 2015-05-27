@@ -3,7 +3,7 @@ gulp-server-livereload [![Build Status](http://img.shields.io/travis/hiddentao/g
 
 > Gulp plugin to run a local webserver with live reload using socket.io
 
-Serves a folder over HTTP and watch it for changes, telling the browser to 
+Serve a folder over HTTP and watch it for changes, telling the browser to 
 reload itself when a change happens.
 
 Uses [socket.io](http://socket.io) so that the livereload mechanism works even 
