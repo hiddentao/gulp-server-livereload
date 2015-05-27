@@ -6,6 +6,7 @@ var through = require('through2'),
   https = require('https'),
   inject = require('connect-inject'),
   connect = require('connect'),
+  multiline = require('multiline'),
   watch = require('node-watch'),
   fs = require('fs'),
   serveIndex = require('serve-index'),
@@ -87,54 +88,106 @@ module.exports = function(options) {
     var ioServerOrigin = 'http://' + config.host + ':' + config.livereload.port;
 
     // socket.io won't load if requirejs is already loaded unless I disable it first
-    var snippet = "<script type=\"text/javascript\">"
-      + "var ___require, ___define;"
-      + "if (typeof require !== 'undefined' && typeof requirejs !== 'undefined' && require === requirejs) {"
-      + "    ___require = require;"
-      + "    ___define = define;"
-      + "    require = define = null;"
-      + "}"
-      + "</script>"
-      + "<script type=\"text/javascript\" src=\"" + ioServerOrigin +"/socket.io.js\"></script>"
-      + "<script type=\"text/javascript\">"
-      + "if (___require) { require = ___require; define = ___define }"
-      + "console.log('Connecting to livereload server..." + ioServerOrigin + "');"
-      + "var ___socket = io.connect('" + ioServerOrigin +"');"
-      + "___socket.on('connect', function() { console.log('Successfully connected to livereload server'); });"
-      + "___socket.on('connect_error', function(err) { console.log('Failed to connect to livereload server: ' + err); });"
-      + "___socket.on('reload', function() { location.reload(); });"
-    ;
+    var snippet = multiline.stripIndent(function() {/*
+      <script type="text/javascript">
+        var __require, __define;
+        if (typeof require !== 'undefined' && typeof requirejs !== 'undefined' && require === requirejs) {
+          __require = require;
+          __define = define;
+          require = define = null;
+        }
+
+        (function() {
+          var socketIoServer = document.location.protocol + '//' + document.location.hostname + ':<PORT>';
+
+          var lr = document.createElement('script'); lr.type = 'text/javascript'; lr.async = true;
+          lr.src = socketIoServer + '/socket.io.js';
+
+          lr.onload = function() {
+            if (__require) {
+              require = __require;
+              define = __define;
+            }
+
+            console.log('Connecting to livereload server...' + socketIoServer);
+            
+            var __socket = window.__socket = io.connect(socketIoServer);
+            
+            __socket.on('connect', function() {
+              console.log('Successfully connected to livereload server');
+            });
+
+            __socket.on('connect_error', function(err) {
+              console.log('Failed to connect to livereload server: ' + err);
+            });
+
+            __socket.on('reload', function() {
+              location.reload();
+            });
+          };
+
+          lr.onerror = function() {
+            alert("Failed to load livereload script");
+          };
+
+          var s = document.getElementsByTagName('script')[0];
+          s.parentNode.insertBefore(lr, s);
+  
+        })();
+      </script>
+
+    */}).replace('<PORT>', config.livereload.port);
+   
 
     if (config.clientConsole) {
-      // sometimes socket.io fails to serialize arguments e.g. angular $state
-      // socket.io can't handle cyclic objects either
-      // some browsers don't have an .apply method on console methods
-      snippet += "var ___console;"
-        + "if (typeof console !== 'undefined') {"
-        + " ___console = console;"
-        + "};"
-        + "var console = {};"
-        + "(function(methods) {"
-        + "    var methods = ['info','log','error','warn'];"
-        + "    for (var i in methods) {"
-        + "        console[methods[i]] = (function(method){"
-        + "            return function() {"
-        + "                var args = arguments, success;"
-        + "                try { args = JSON.parse(JSON.stringify(args)); success = true; } catch(e) {"
-        + "                    ___console.error(e + ', console.' + method + ' will not be sent to livereload server', args);"
-        + "                }"
-        + "                try { if (success) ___socket.emit('console_' + method, args); } catch(e) {}"
-        + "                try { if (___console[method]) ___console[method].apply(null, arguments); } catch(e) {"
-        + "                     ___console[method](arguments);"
-        + "                }"
-        + "            }"
-        + "        }(methods[i]))"
-        + "    }"
-        + "}())"
-      ;
-    }
+      snippet += multiline.stripIndent(function() {/*
 
-    snippet += "</script>";
+        <script type="text/javascript">
+
+          var __console;
+
+          if (typeof console !== "undefined") {
+            __console = console;
+          }
+
+          var console = window.console = {};
+
+          (function(methods){
+            var methods = ['info','log','error','warn'];
+            for (var i in methods) {
+              console[methods[i]] = (function(method){
+                return function() {
+                  var args = arguments, success;
+
+                  try {
+                    args = JSON.parse(JSON.stringify(args));
+                    success = true;
+                  } catch (e) {
+                    ___console.error(e + ', console.' + method + ' will not be sent to livereload server', args);
+                  }
+
+                  try {
+                    if (success) {
+                      ___socket.emit('console_' + method, args);
+                    }
+                  } catch (e) {}
+
+                  try {
+                    if (__console[method]) {
+                      __console[method].apply(null, arguments);
+                    }
+                  } catch (e) {
+                    __console.error(e, arguments);
+                  }
+                };
+              })(methods[i]);
+            }
+          })();
+
+        </script>
+
+      */});
+    }
 
     app.use(inject({
       snippet: snippet,
