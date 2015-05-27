@@ -6,11 +6,14 @@ gulp-server-livereload [![Build Status](http://img.shields.io/travis/hiddentao/g
 Serve a folder over HTTP and watch it for changes, telling the browser to 
 reload itself when a change happens.
 
-Uses [socket.io](http://socket.io) so that the livereload mechanism works even 
+* Uses [socket.io](http://socket.io) - livereload mechanism works even 
 if your browser does not support WebSockets (PhoneGap developers rejoice!).
 
-It can also capture `window.console` output from the client-side and transmit it
-to the back-end for display. This is useful for when testing from Phonegap, etc.
+* `window.console` capture - it can capture `console` output from the 
+client-side and transmit it to the back-end for display. This is useful for 
+when testing from Phonegap, etc.
+
+* Comes with a command-line runnable.
 
 This was originally a fork of [gulp-webserver](https://github.com/schickling/gulp-webserver).
 
