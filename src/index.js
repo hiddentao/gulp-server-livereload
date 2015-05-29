@@ -122,6 +122,9 @@ module.exports = function(options) {
             });
 
             __socket.on('reload', function() {
+              // disable "confirm reload" dialogs
+              window.onbeforeunload = null;
+              
               location.reload();
             });
           };
