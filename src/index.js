@@ -50,11 +50,6 @@ module.exports = function(options) {
     livereload: {
       enable: false,
       port: 35729,
-      filter: function (filename) {
-        if (filename.match(/node_modules/)) {
-          return false;
-        } else { return true; }
-      }
     },
 
     // Middleware: Directory listing

@@ -244,6 +244,7 @@ describe('gulp-server-livereload', function() {
       .end(function(err) {
         if (err) return done(err);
       });
+
     request('http://localhost:8000')
       .get('/proxied')
       .expect(200, /I am Ron Burgandy?/)
@@ -282,6 +283,7 @@ describe('gulp-server-livereload', function() {
       .end(function(err) {
         if (err) return done(err);
       });
+
     request('http://localhost:8000')
       .get('/proxied')
       .expect(200, /I am Ron Burgandy?/)
