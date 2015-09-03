@@ -35,7 +35,6 @@ module.exports = function(options) {
     https: false,
     open: false,
     log: 'info',
-    clientConsole: false,
 
     /**
      *
@@ -57,7 +56,8 @@ module.exports = function(options) {
       port: 35729,
       filter: function(filename, cb) {
         cb( !(/node_modules/.test(filename)) );
-      }
+      },
+      clientConsole: false,
     },
 
     // Middleware: Directory listing
@@ -94,8 +94,8 @@ module.exports = function(options) {
 
     var snippetParams = [];
 
-    if (config.clientConsole) {
-      snippetParams.push("extra=capture-log");
+    if (config.livereload.clientConsole) {
+      snippetParams.push("extra=capture-console");
     }
 
     var snippet = 

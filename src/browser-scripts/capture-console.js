@@ -1,15 +1,19 @@
-var __console;
+(function(){
+  var socket = window.__socket;
 
-if (typeof console !== "undefined") {
-  __console = console;
-}
+  if (!socket) {
+    return;
+  }
 
-var console = window.console = {};
+  var __console;
 
-(function(methods){
+  if (typeof console !== "undefined") {
+    __console = console;
+  }
+
   var methods = ['info','log','error','warn'];
   for (var i in methods) {
-    console[methods[i]] = (function(method){
+    window.console[methods[i]] = (function(method){
       return function() {
         var args = arguments, success;
 
@@ -22,7 +26,7 @@ var console = window.console = {};
 
         try {
           if (success) {
-            ___socket.emit('console_' + method, args);
+            socket.emit('console_' + method, args);
           }
         } catch (e) {}
 

@@ -83,13 +83,15 @@ Key | Type | Default | Description |
 --- | --- | --- | --- |
 `host` | String | `localhost` | hostname of the webserver
 `port` | Number | `8000` | port of the webserver
-`livereload` | Boolean/Object | `false` | whether to use livereload. For advanced options, provide an object. You can use the `port` property to set a custom live reload port (default is `35729`) and the `filter` function to filter out files to watch (default filters out `node_modules`).
+`livereload` | Boolean/Object | `false` | whether to use livereload. For advanced options, provide an object. 
+`livereload.port` | Number | `35729` | port for livereload server to listen on.
+`livereload.filter` | Function | - | function to filter out files to watch (default filters out `node_modules`).
+`livereload.clientConsole` | Boolean | `false` | whether to capture `window.console` output from the client and send it to the back-end for display.
 `directoryListing` | Boolean/Object | `false` | whether to display a directory listing. For advanced options, provide an object. You can use the `path property to set a custom path or the `options` property to set custom [serve-index](https://github.com/expressjs/serve-index) options.
 `defaultFile` | String | `index.html` | default file to show when root URL is requested. If `directoryListing` is enabled then this gets disabled.
 `open` | Boolean/Object | `false` | open the localhost server in the browser
 `https` | Boolean/Object | `false` | whether to use https or not. By default, `gulp-server-livereload` provides you with a development certificate but you remain free to specify a path for your key and certificate by providing an object like this one: `{key: 'path/to/key.pem', cert: 'path/to/cert.pem'}`.
 `log` | String | `info` | If set to `debug` you will see all requests logged to the console.
-`clientConsole` | Boolean | `false` | whether to capture `window.console` output from the client and send it to the back-end for display.
 
 
 ## Livereload behaviour

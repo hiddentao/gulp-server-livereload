@@ -7,6 +7,11 @@
   }
 
 
+  var __log = function(msg) {
+    console.log('LIVERELOAD: ' + msg);
+  };
+
+
   var __getLastTagOfType = function(tagName) {
     var tags = document.getElementsByTagName(tagName);
 
@@ -51,7 +56,7 @@
             if ('stylesheet' == linkTag.rel && 0 <= linkTag.href.indexOf(file.name)) {
               var href = linkTag.getAttribute('href');
 
-              console.log('Re-loading CSS: ' + href);
+              __log('reload css: ' + file.name);
 
               href = __addUrlQueryParam(href, '_lf', Date.now());
 
@@ -63,6 +68,8 @@
       }
       // other stuff changed
       else {
+        __log('reload browser');
+
         // disable "confirm reload" dialogs
         window.onbeforeunload = null;
         // reload whole page
@@ -71,32 +78,57 @@
     }
   }
 
-
   var __parseURL = function(url) {
     var parser = document.createElement('a');
     parser.href = url;
     return parser;
   };
 
+
   // get URL back to server
   var script = __getLastTagOfType('script');
-
   var serverUrl = __parseURL(script.getAttribute('src'));
-
   var socketIoServer = serverUrl.protocol + '//' + serverUrl.hostname + ':' + serverUrl.port;
 
+
   var __loadScript = function(path, onload, onerror) {
+    __log('load script ' + path);
+
     var lr = document.createElement('script'); 
     lr.type = 'text/javascript'; 
     lr.async = true;
     lr.src = socketIoServer + '/' + path;
 
     lr.onload = onload;
-    lr.onerror = onerror;
+    lr.onerror = function() {
+      __log("failed to load script");
+    };
 
     var s = document.getElementsByTagName('script')[0];
     s.parentNode.insertBefore(lr, s);
   };
+
+
+  __alreadyLoadedExtraScripts = false;
+
+  var __loadExtraScripts = function() {
+    if (__alreadyLoadedExtraScripts) { 
+      return;
+    }
+
+    __alreadyLoadedExtraScripts = true;
+
+    // load in extra scripts
+    var extras = serverUrl.search.split('=');
+    if (1 < extras.length) {
+      extras = extras[1].split(",");
+
+      extras.forEach(function(extra) {
+        __loadScript(extra + '.js');
+      });
+    }
+  }
+
 
 
   __loadScript('socket.io.js', function() {
@@ -105,16 +137,18 @@
       define = __define;
     }
 
-    console.log('Connecting to livereload server...' + socketIoServer);
+    __log('connecting to server...' + socketIoServer);
     
     var __socket = window.__socket = io.connect(socketIoServer);
     
     __socket.on('connect', function() {
-      console.log('Successfully connected to livereload server');
+      __log('successfully connected');
+
+      __loadExtraScripts();
     });
 
     __socket.on('connect_error', function(err) {
-      console.log('Failed to connect to livereload server: ' + err);
+      __log('failed to connect: ' + err);
     });
 
     __socket.on('file_changed', function(file) {
@@ -124,7 +158,6 @@
         console.error(err);
       }
     });
-  }, function() {
-    alert("Failed to load livereload script");
   });
+
 })();
