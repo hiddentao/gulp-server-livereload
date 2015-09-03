@@ -17,6 +17,11 @@ var through = require('through2'),
   socket = require('socket.io');
 
 
+var BROWSER_SCIPTS_DIR = path.join(__dirname, 'browser-scripts');
+
+
+
+
 module.exports = function(options) {
   var defaults = {
     /**
@@ -87,110 +92,18 @@ module.exports = function(options) {
   if (config.livereload.enable) {
     var ioServerOrigin = 'http://' + config.host + ':' + config.livereload.port;
 
-    // socket.io won't load if requirejs is already loaded unless I disable it first
-    var snippet = multiline.stripIndent(function() {/*
-      <script type="text/javascript">
-        var __require, __define;
-        if (typeof require !== 'undefined' && typeof requirejs !== 'undefined' && require === requirejs) {
-          __require = require;
-          __define = define;
-          require = define = null;
-        }
-
-        (function() {
-          var socketIoServer = document.location.protocol + '//' + document.location.hostname + ':<PORT>';
-
-          var lr = document.createElement('script'); lr.type = 'text/javascript'; lr.async = true;
-          lr.src = socketIoServer + '/socket.io.js';
-
-          lr.onload = function() {
-            if (__require) {
-              require = __require;
-              define = __define;
-            }
-
-            console.log('Connecting to livereload server...' + socketIoServer);
-            
-            var __socket = window.__socket = io.connect(socketIoServer);
-            
-            __socket.on('connect', function() {
-              console.log('Successfully connected to livereload server');
-            });
-
-            __socket.on('connect_error', function(err) {
-              console.log('Failed to connect to livereload server: ' + err);
-            });
-
-            __socket.on('reload', function() {
-              // disable "confirm reload" dialogs
-              window.onbeforeunload = null;
-              
-              location.reload();
-            });
-          };
-
-          lr.onerror = function() {
-            alert("Failed to load livereload script");
-          };
-
-          var s = document.getElementsByTagName('script')[0];
-          s.parentNode.insertBefore(lr, s);
-  
-        })();
-      </script>
-
-    */}).replace('<PORT>', config.livereload.port);
-   
+    var snippetParams = [];
 
     if (config.clientConsole) {
-      snippet += multiline.stripIndent(function() {/*
-
-        <script type="text/javascript">
-
-          var __console;
-
-          if (typeof console !== "undefined") {
-            __console = console;
-          }
-
-          var console = window.console = {};
-
-          (function(methods){
-            var methods = ['info','log','error','warn'];
-            for (var i in methods) {
-              console[methods[i]] = (function(method){
-                return function() {
-                  var args = arguments, success;
-
-                  try {
-                    args = JSON.parse(JSON.stringify(args));
-                    success = true;
-                  } catch (e) {
-                    ___console.error(e + ', console.' + method + ' will not be sent to livereload server', args);
-                  }
-
-                  try {
-                    if (success) {
-                      ___socket.emit('console_' + method, args);
-                    }
-                  } catch (e) {}
-
-                  try {
-                    if (__console[method]) {
-                      __console[method].apply(null, arguments);
-                    }
-                  } catch (e) {
-                    __console.error(e, arguments);
-                  }
-                };
-              })(methods[i]);
-            }
-          })();
-
-        </script>
-
-      */});
+      snippetParams.push("extra=capture-log");
     }
+
+    var snippet = 
+      "<script type='text/javascript' async defer src='" 
+      + ioServerOrigin 
+      + "/livereload.js?" 
+      + snippetParams.join('&') 
+      + "'></script>";
 
     app.use(inject({
       snippet: snippet,
@@ -245,9 +158,15 @@ module.exports = function(options) {
         gutil.log.apply(null, args);
       });
     });
-    io.attach(
-      (config.livereload.ioServer = http.createServer().listen(config.livereload.port, config.host))
-    );
+
+    var ioApp = connect();
+
+    ioApp.use(serveStatic(BROWSER_SCIPTS_DIR, { index: false }));
+
+    var ioServer = config.livereload.ioServer = 
+      http.createServer(ioApp).listen(config.livereload.port, config.host);
+
+    io.attach(ioServer);
   }
 
   // http server
@@ -284,7 +203,14 @@ module.exports = function(options) {
         config.livereload.filter(filename, function(shouldReload) {
           if (shouldReload) {
             gutil.log('Livereload: file changed: ' + filename);
+
             config.livereload.io.sockets.emit('reload');
+
+            config.livereload.io.sockets.emit('file_changed', {
+              path: filename,
+              name: path.basename(filename),
+              ext: path.extname(filename),
+            });
           }
         });
       });

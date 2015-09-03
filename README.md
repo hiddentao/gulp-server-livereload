@@ -13,6 +13,9 @@ if your browser does not support WebSockets (PhoneGap developers rejoice!).
 client-side and transmit it to the back-end for display. This is useful for 
 when testing from Phonegap, etc.
 
+* Supports [CSS injection](#livereload-behaviour) (no need to reload the whole page if just your CSS 
+has changed).
+
 * Comes with a command-line runnable.
 
 This was originally a fork of [gulp-webserver](https://github.com/schickling/gulp-webserver).
@@ -42,6 +45,9 @@ gulp.task('webserver', function() {
 ```
 
 If you run `gulp webserver` your browser should automatically open up to `http://localhost:8000` and show a directory listing of the `app` folder.
+
+**Note:** In order for the livereload browser-side code to be injected properly 
+your HTML must have a closing `</body> tag.
 
 ### Command-line
 
@@ -86,6 +92,40 @@ Key | Type | Default | Description |
 `clientConsole` | Boolean | `false` | whether to capture `window.console` output from the client and send it to the back-end for display.
 
 
+## Livereload behaviour
+
+By default when a file changes the livereload script in the browser does the 
+following:
+
+1. Checks to see whether the changed file is a CSS file
+2. If it is a CSS file then it reloads the changed CSS files in the browser
+3. Otherwise it reloads the whole page
+
+To override the default behaviour define the following method in Javascript:
+
+```js
+/** 
+ * This method gets called by the livereload script when the server notifies it 
+ * that something has changed.
+ * 
+ * @param  {Object} file File which changed.
+ */
+window._onLiveReloadFileChanged = function(file) {
+  // do whatever you want here, e.g. location.reload();  
+}
+```
+
+The `file` parameter has the following structure:
+
+```js
+{
+  "path": ...full path to file which changed...
+  "name": ...file name (without path)...
+  "ext": ...file extension name...
+}
+```
+
+
 ## FAQ
 
 #### Why can't I reach the server from the network?
@@ -122,6 +162,7 @@ gulp.task('webserver', function() {
     }));
 });
 ```
+
 
 ## License
 
