@@ -134,7 +134,7 @@
     __alreadyLoadedExtraScripts = true;
 
     // load in extra scripts
-    var extras = serverUrl.search.split('=');
+    var extras = socketIoServer.search.split('=');
     if (1 < extras.length) {
       extras = extras[1].split(",");
 
