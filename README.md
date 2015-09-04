@@ -149,18 +149,23 @@ gulp.task('webserver', function() {
 
 #### How can I use livereload if my HTML is already being served up by a node.js/other app?
 
-You'll have to add a `<script>` tag to dynamically load in the browser-side scripts. 
-
+You'll have to add some Javascript to dynamically load in the browser-side scripts.  
 For example, if the `gulp-server-livereload` livereload port is set to 34322 then you would add:
 
-```html
-<script type='text/javascript' src='http://localhost:34322/livereload.js'></script>
+```js
+(function() {
+  var lrHost = location.protocol + '//' + location.hostname + ':34322';
+  var s = document.createElement('script');
+  s.async = true;
+  s.setAttribute('src', lrHost + '/livereload.js');
+  document.body.appendChild(s);
+})();
 ```
 
-To enable console logging capture use:
+To enable console logging capture add the following query paramter:
 
-```html
-<script type='text/javascript' src='http://localhost:34322/livereload.js?extra=capture-console'></script>
+```js
+s.setAttribute('src', lrHost + '/livereload.js?extra=capture-console');
 ```
 
 
