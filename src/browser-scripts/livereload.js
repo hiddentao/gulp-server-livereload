@@ -20,7 +20,7 @@
 
 
 
-  var __getServerUrl = function() {
+  var __getSetupInfo = function() {
     var tags = document.getElementsByTagName('script');
 
     for (var i=0; i<tags.length; ++i) {
@@ -30,8 +30,10 @@
       if (0 < tagSrc.indexOf('livereload.js')) {
         var serverUrl = __parseURL(tagSrc);
 
-        return serverUrl.protocol + '//' 
-          + serverUrl.hostname + ':' + serverUrl.port;
+        return {
+          serverUrl: serverUrl.protocol + '//' + serverUrl.hostname + ':' + serverUrl.port,
+          query: serverUrl.search,
+        };
       }
     }
   };
@@ -99,11 +101,11 @@
 
 
   // get URL back to server
-  var socketIoServer = __getServerUrl();
-  if (!socketIoServer) {
+  var setupInfo = __getSetupInfo();
+  if (!setupInfo) {
     return __log('unable to find server address');
   } else {
-    __log('server at ' + socketIoServer);
+    __log('server at ' + setupInfo.serverUrl);
   }
 
   var __loadScript = function(path, onload, onerror) {
@@ -112,7 +114,7 @@
     var lr = document.createElement('script'); 
     lr.type = 'text/javascript'; 
     lr.async = true;
-    lr.src = socketIoServer + '/' + path;
+    lr.src = setupInfo.serverUrl + '/' + path;
 
     lr.onload = onload;
     lr.onerror = function() {
@@ -134,7 +136,7 @@
     __alreadyLoadedExtraScripts = true;
 
     // load in extra scripts
-    var extras = socketIoServer.search.split('=');
+    var extras = setupInfo.query.split('=');
     if (1 < extras.length) {
       extras = extras[1].split(",");
 
@@ -152,9 +154,9 @@
       define = __define;
     }
 
-    __log('connecting to server...' + socketIoServer);
+    __log('connecting to server');
     
-    var __socket = window.__socket = io.connect(socketIoServer);
+    var __socket = window.__socket = io.connect(setupInfo.serverUrl);
     
     __socket.on('connect', function() {
       __log('successfully connected');
