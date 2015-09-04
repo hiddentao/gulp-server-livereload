@@ -149,7 +149,7 @@ gulp.task('webserver', function() {
 
 #### How can I use livereload if my HTML is already being served up by a node.js/other app?
 
-You'll have to add a `<script>` tag to your HTML to load in the browser-side scripts. 
+You'll have to add a `<script>` tag to dynamically load in the browser-side scripts. 
 
 For example, if the `gulp-server-livereload` livereload port is set to 34322 then you would add:
 

@@ -12,10 +12,28 @@
   };
 
 
-  var __getLastTagOfType = function(tagName) {
-    var tags = document.getElementsByTagName(tagName);
+  var __parseURL = function(url) {
+    var parser = document.createElement('a');
+    parser.href = url;
+    return parser;
+  };
 
-    return tags[tags.length - 1];
+
+
+  var __getServerUrl = function() {
+    var tags = document.getElementsByTagName('script');
+
+    for (var i=0; i<tags.length; ++i) {
+      var tag = tags[i],
+        tagSrc = tag.getAttribute('src') || '';
+
+      if (0 < tagSrc.indexOf('livereload.js')) {
+        var serverUrl = __parseURL(tagSrc);
+
+        return serverUrl.protocol + '//' 
+          + serverUrl.hostname + ':' + serverUrl.port;
+      }
+    }
   };
 
 
@@ -78,18 +96,15 @@
     }
   }
 
-  var __parseURL = function(url) {
-    var parser = document.createElement('a');
-    parser.href = url;
-    return parser;
-  };
 
 
   // get URL back to server
-  var script = __getLastTagOfType('script');
-  var serverUrl = __parseURL(script.getAttribute('src'));
-  var socketIoServer = serverUrl.protocol + '//' + serverUrl.hostname + ':' + serverUrl.port;
-
+  var socketIoServer = __getServerUrl();
+  if (!socketIoServer) {
+    return __log('unable to find server address');
+  } else {
+    __log('server at ' + socketIoServer);
+  }
 
   var __loadScript = function(path, onload, onerror) {
     __log('load script ' + path);
