@@ -151,7 +151,6 @@ gulp.task('webserver', function() {
 });
 ```
 
-<<<<<<< HEAD
 #### How can I use livereload if my HTML is already being served up by a node.js/other app?
 
 You'll have to add some Javascript to dynamically load in the browser-side scripts.  
@@ -193,8 +192,6 @@ gulp.task('webserver', function() {
 ```
 
 
-=======
->>>>>>> xuan9/master
 ## License
 
 MIT - see LICENSE.md
