@@ -6,7 +6,6 @@ gulp-server-livereload [![Build Status](http://img.shields.io/travis/hiddentao/g
 Serve a folder over HTTP and watch it for changes, telling the browser to 
 reload itself when a change happens.
 
-<<<<<<< HEAD
 * Uses [socket.io](http://socket.io) - livereload mechanism works even 
 if your browser does not support WebSockets (PhoneGap developers rejoice!).
 
@@ -17,13 +16,13 @@ when testing from Phonegap, etc.
 * Supports [CSS injection](#livereload-behaviour) (no need to reload the whole page if just your CSS 
 has changed).
 
+* Proxy mode - proxy requests arriving at certain URLs to other servers.
+
 * Comes with a command-line runnable.
 
-This was originally a fork of [gulp-webserver](https://github.com/schickling/gulp-webserver).
-=======
-It can also capture `window.console` output from the client-side and transmit it
-to the back-end for display. This is useful for when testing from Phonegap, etc.
->>>>>>> xuan9/master
+
+_This was originally a fork of [gulp-webserver](https://github.com/schickling/gulp-webserver)._
+
 
 ## Installation
 
