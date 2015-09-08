@@ -9,6 +9,7 @@ process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 describe('gulp-server-livereload', function() {
 
   var stream;
+  var proxyStream;
 
   var rootDir = new File({
     path: path.join(__dirname, 'fixtures')
@@ -18,8 +19,16 @@ describe('gulp-server-livereload', function() {
     path: path.join(__dirname, 'fixtures/directoryIndexMissing')
   });
 
+  var directoryProxiedDir = new File({
+    path: __dirname + '/fixtures/directoryProxied'
+  });
+
   afterEach(function() {
     stream.emit('kill');
+    if (proxyStream) {
+      proxyStream.emit('kill');
+      proxyStream = undefined;
+    }
   });
 
 
@@ -32,7 +41,7 @@ describe('gulp-server-livereload', function() {
       request('http://localhost:8000')
         .get('/')
         .expect(200, /Hello World/)
-        .end(done);      
+        .end(done);
     });
   });
 
@@ -118,10 +127,7 @@ describe('gulp-server-livereload', function() {
     request('http://localhost:8000')
       .get('/')
       .expect(200, /Default/)
-      .end(function(err) {
-        if (err) return done(err);
-        done(err);
-      });
+      .end(done);
   });
 
 
@@ -135,10 +141,7 @@ describe('gulp-server-livereload', function() {
     request('http://localhost:8000')
       .get('/')
       .expect(200,/listing directory/)
-      .end(function(err) {
-        if (err) return done(err);
-        done(err);
-      });
+      .end(done);
   });
 
 
@@ -152,10 +155,7 @@ describe('gulp-server-livereload', function() {
     request('http://localhost:8000')
       .get('/')
       .expect(404,/Cannot GET/)
-      .end(function(err) {
-        if (err) return done(err);
-        done(err);
-      });
+      .end(done);
   });
 
 
@@ -170,15 +170,15 @@ describe('gulp-server-livereload', function() {
       .get('/')
       .expect(200,/Hello World/)
       .end(function(err) {
-        if (err) return done(err);
-      });
-    request('http://localhost:35729')
-      .get('/socket.io.js')
-      .expect(200,/socket\.io/)
-      .end(function(err) {
-        if (err) return done(err);
-        done(err);
-      });
+        if (err) {
+          return done(err);
+        }
+
+        request('http://localhost:35729')
+          .get('/socket.io.js')
+          .expect(200,/socket\.io/)
+          .end(done);
+      });      
   });
 
 
@@ -209,6 +209,85 @@ describe('gulp-server-livereload', function() {
         }
 
       });
+  });
+
+
+  it('should proxy requests to localhost:8001', function(done) {
+
+    stream = webserver({
+      proxies: [{
+        source: '/proxied',
+        target: 'http://localhost:8001'
+      }]
+    });
+
+    stream.write(rootDir);
+
+    proxyStream = webserver({
+      port: 8001
+    });
+
+    proxyStream.write(directoryProxiedDir);
+
+    request('http://localhost:8000')
+      .get('/')
+      .expect(200, /Hello World/)
+      .end(function(err) {
+        if (err) {
+          return done(err);
+        }
+
+        request('http://localhost:8000')
+          .get('/proxied')
+          .expect(200, /I am Ron Burgandy?/)
+          .end(done);
+      });
+  });
+
+  it('should configure proxy with options', function(done) {
+
+    stream = webserver({
+      proxies: [{
+        source: '/proxied',
+        target: 'http://localhost:8001',
+        options: {
+          headers: {
+            'X-forwarded-host': 'localhost:8000'
+          }
+        }
+      }]
+    });
+
+    stream.write(rootDir);
+
+    proxyStream = webserver({
+      port: 8001
+    });
+
+    proxyStream.write(directoryProxiedDir);
+
+    request('http://localhost:8000')
+      .get('/')
+      .expect(200, /Hello World/)
+      .end(function(err) {
+        if (err) {
+          return done(err);
+        }
+
+        request('http://localhost:8000')
+          .get('/proxied')
+          .expect(200, /I am Ron Burgandy?/)
+          .end(done);
+      });
+  });
+
+  this.timeout(20);
+  it('should accept `true` as an open option', function(done){
+    stream = webserver({
+      open: true
+    });
+    stream.write(rootDir);
+    setTimeout(done, 15);
   });
 
 

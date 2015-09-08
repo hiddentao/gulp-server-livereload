@@ -6,6 +6,7 @@ gulp-server-livereload [![Build Status](http://img.shields.io/travis/hiddentao/g
 Serve a folder over HTTP and watch it for changes, telling the browser to 
 reload itself when a change happens.
 
+<<<<<<< HEAD
 * Uses [socket.io](http://socket.io) - livereload mechanism works even 
 if your browser does not support WebSockets (PhoneGap developers rejoice!).
 
@@ -19,6 +20,10 @@ has changed).
 * Comes with a command-line runnable.
 
 This was originally a fork of [gulp-webserver](https://github.com/schickling/gulp-webserver).
+=======
+It can also capture `window.console` output from the client-side and transmit it
+to the back-end for display. This is useful for when testing from Phonegap, etc.
+>>>>>>> xuan9/master
 
 ## Installation
 
@@ -92,6 +97,7 @@ Key | Type | Default | Description |
 `open` | Boolean/Object | `false` | open the localhost server in the browser
 `https` | Boolean/Object | `false` | whether to use https or not. By default, `gulp-server-livereload` provides you with a development certificate but you remain free to specify a path for your key and certificate by providing an object like this one: `{key: 'path/to/key.pem', cert: 'path/to/cert.pem'}`.
 `log` | String | `info` | If set to `debug` you will see all requests logged to the console.
+`proxies` | Array | `[]`| a list of proxy objects.  Each proxy object can be specified by `{source: '/abc', target: 'http://localhost:8080/abc', options: {headers: {'ABC_HEADER': 'abc'}}}`.
 
 
 ## Livereload behaviour
@@ -127,7 +133,6 @@ The `file` parameter has the following structure:
 }
 ```
 
-
 ## FAQ
 
 #### Why can't I reach the server from the network?
@@ -147,6 +152,7 @@ gulp.task('webserver', function() {
 });
 ```
 
+<<<<<<< HEAD
 #### How can I use livereload if my HTML is already being served up by a node.js/other app?
 
 You'll have to add some Javascript to dynamically load in the browser-side scripts.  
@@ -188,6 +194,8 @@ gulp.task('webserver', function() {
 ```
 
 
+=======
+>>>>>>> xuan9/master
 ## License
 
 MIT - see LICENSE.md
