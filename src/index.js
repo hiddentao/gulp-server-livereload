@@ -96,7 +96,10 @@ module.exports = function(options) {
     if (config.proxies[i].hasOwnProperty('options')) {
       extend(proxyoptions, config.proxies[i].options);
     }
-    app.use(config.proxies[i].source, proxy(proxyoptions));
+
+    proxyoptions.route = config.proxies[i].source;
+    app.use(proxy(proxyoptions));
+
     gutil.log(config.proxies[i].source + ' is proxied.');
   }
   //  directory listing
