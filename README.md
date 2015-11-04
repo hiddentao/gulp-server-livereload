@@ -51,7 +51,7 @@ gulp.task('webserver', function() {
 If you run `gulp webserver` your browser should automatically open up to `http://localhost:8000` and show a directory listing of the `app` folder.
 
 **Note:** In order for the livereload browser-side code to be injected properly 
-your HTML must have a closing `</body> tag.
+your HTML must have a closing `</body>` tag.
 
 ### Command-line
 
