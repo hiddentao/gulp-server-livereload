@@ -199,7 +199,7 @@ gulp.task('webserver', function() {
 ```js
 gulp.task('webserver', function() {
   gulp.src('app')
-    .pipe(webserver({
+    .pipe(server({
       fallback: 'index.html'
     }));
 });
