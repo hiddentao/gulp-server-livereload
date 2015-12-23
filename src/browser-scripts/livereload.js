@@ -69,22 +69,27 @@
 
       // CSS changed?
       if ('.css' === file.ext) {
-        var linkTags = document.getElementsByTagName('link');
+        var linkTags = document.querySelectorAll('link[rel="stylesheet"]');
 
-        for (var i=0; i<linkTags.length; ++i) {
-          (function(linkTag) {
-            if ('stylesheet' == linkTag.rel && 0 <= linkTag.href.indexOf(file.name)) {
-              var href = linkTag.getAttribute('href');
+        Array.prototype.forEach.call(linkTags, function(linkTag) {
+          if (0 <= linkTag.href.indexOf(file.name) && !linkTag.dataset.reloading) {
+            var clone = linkTag.cloneNode(false);
+            var href = linkTag.getAttribute('href');
+            href = __addUrlQueryParam(href, '_lf', Date.now());
+            clone.setAttribute('href', href);
+            // Only remove the original once the new one loads, to prevent FOUC
+            clone.addEventListener('load', function () {
+              linkTag.parentElement.removeChild(linkTag)
+              __log('reloaded css: ' + file.name);
+            });
+            linkTag.parentElement.insertBefore(clone, linkTag.nextElementSibling);
 
-              __log('reload css: ' + file.name);
+            // Prevent race conditions from other reloads before this one finishes
+            linkTag.dataset.reloading = true;
 
-              href = __addUrlQueryParam(href, '_lf', Date.now());
-
-              // overwrite original (forces browser to reload it)
-              linkTag.setAttribute('href', href);    
-            }
-          })(linkTags[i]);
-        }
+            __log('reloading css: ' + file.name);
+          }
+        });
       }
       // other stuff changed
       else {
