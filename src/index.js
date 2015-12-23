@@ -224,6 +224,8 @@ module.exports = function(options) {
             gutil.log('Livereload: file changed: ' + filename);
 
             config.livereload.io.sockets.emit('reload');
+            // Treat changes to sourcemaps as changes to the original files.
+            filename = filename.replace(/\.map$/, '');
 
             config.livereload.io.sockets.emit('file_changed', {
               path: filename,
