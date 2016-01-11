@@ -83,6 +83,9 @@ module.exports = function(options) {
   // Allow shorthand syntax, using the enable property as a flag
   var config = enableMiddlewareShorthand(defaults, options, ['directoryListing', 'livereload']);
 
+  // If it wasn't provided, use the server host:
+  config.livereload.host = config.livereload.host || config.host;
+
   var openInBrowser = function () {
     if (config.open === false) return;
     open('http' + (config.https ? 's' : '') + '://' + config.host + ':' + config.port);
@@ -110,7 +113,7 @@ module.exports = function(options) {
 
   // socket.io
   if (config.livereload.enable) {
-    var ioServerOrigin = 'http://' + config.host + ':' + config.livereload.port;
+    var ioServerOrigin = 'http://' + config.livereload.host + ':' + config.livereload.port;
 
     var snippetParams = [];
 
@@ -118,11 +121,11 @@ module.exports = function(options) {
       snippetParams.push("extra=capture-console");
     }
 
-    var snippet = 
-      "<script type='text/javascript' async defer src='" 
-      + ioServerOrigin 
-      + "/livereload.js?" 
-      + snippetParams.join('&') 
+    var snippet =
+      "<script type='text/javascript' async defer src='"
+      + ioServerOrigin
+      + "/livereload.js?"
+      + snippetParams.join('&')
       + "'></script>";
 
     app.use(inject({
@@ -183,7 +186,7 @@ module.exports = function(options) {
 
     ioApp.use(serveStatic(BROWSER_SCIPTS_DIR, { index: false }));
 
-    var ioServer = config.livereload.ioServer = 
+    var ioServer = config.livereload.ioServer =
       http.createServer(ioApp).listen(config.livereload.port, config.host);
 
     io.attach(ioServer, {

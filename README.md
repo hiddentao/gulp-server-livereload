@@ -88,6 +88,7 @@ Key | Type | Default | Description |
 `port` | Number | `8000` | port of the webserver
 `livereload` | Boolean/Object | `false` | whether to use livereload. For advanced options, provide an object.
 `livereload.port` | Number | `35729` | port for livereload server to listen on.
+`livereload.host` | String | `host` | hostname to reference livereload in the markup (to use with pow)
 `livereload.filter` | Function | - | function to filter out files to watch (default filters out `node_modules`).
 `livereload.clientConsole` | Boolean | `false` | whether to capture `window.console` output from the client and send it to the back-end for display.
 `directoryListing` | Boolean/Object | `false` | whether to display a directory listing. For advanced options, provide an object. You can use the `path property to set a custom path or the `options` property to set custom [serve-index](https://github.com/expressjs/serve-index) options.
