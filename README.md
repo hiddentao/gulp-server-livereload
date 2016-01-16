@@ -93,7 +93,7 @@ Key | Type | Default | Description |
 `livereload.clientConsole` | Boolean | `false` | whether to capture `window.console` output from the client and send it to the back-end for display.
 `directoryListing` | Boolean/Object | `false` | whether to display a directory listing. For advanced options, provide an object. You can use the `path property to set a custom path or the `options` property to set custom [serve-index](https://github.com/expressjs/serve-index) options.
 `defaultFile` | String | `index.html` | default file to show when root URL is requested. If `directoryListing` is enabled then this gets disabled.
-`fallback` | String | `undefined` | file to fall back to (relative to webserver root)
+`fallback` | String | `undefined` | file to fall back to (relative to webserver root) when requested resource not found. Useful when building single-page apps with non-has URLs.
 `open` | Boolean/Object | `false` | open the localhost server in the browser
 `https` | Boolean/Object | `false` | whether to use https or not. By default, `gulp-server-livereload` provides you with a development certificate but you remain free to specify a path for your key and certificate by providing an object like this one: `{key: 'path/to/key.pem', cert: 'path/to/cert.pem'}`.
 `log` | String | `info` | If set to `debug` you will see all requests logged to the console.
@@ -194,7 +194,9 @@ gulp.task('webserver', function() {
 
 #### How can I use `html5Mode` for my single page app with this plugin?
 
-**Solution**: Set the `index.html` of your application as `fallback` option. For example:
+When you're building a single-page app with non-hash URLs (html5 mode) then you 
+want the server to always serve up the same file for every URL. This is where 
+the `fallback` option comes into play:
 
 ```js
 gulp.task('webserver', function() {
