@@ -34,6 +34,7 @@ module.exports = function(options) {
     host: 'localhost',
     port: 8000,
     defaultFile: 'index.html',
+    fallback: false,
     https: false,
     open: false,
     log: 'info',
@@ -202,6 +203,8 @@ module.exports = function(options) {
     webserver = http.createServer(app);
   }
 
+  var files = [];
+
   // Create server
   var stream = through.obj(function(file, enc, callback) {
     if ('debug' === config.log) {
@@ -239,11 +242,26 @@ module.exports = function(options) {
 
     callback();
   })
-  .on('data', function() {
+  .on('data', function(f) {
+    files.push(f);
+
     // start the web server
     webserver.listen(config.port, config.host, openInBrowser);
 
     gutil.log('Webserver started at', gutil.colors.cyan('http' + (config.https ? 's' : '') + '://' + config.host + ':' + config.port));
+  })
+  .on('end', function(){
+    if (config.fallback) {
+      files.forEach(function(file){
+        var fallbackFile = file.path + '/' + config.fallback;
+        if (fs.existsSync(fallbackFile)) {
+          app.use(function(req, res) {
+            res.setHeader('Content-Type', 'text/html; charset=UTF-8');
+            fs.createReadStream(fallbackFile).pipe(res);
+          });
+        }
+      });
+    }
   });
 
 
