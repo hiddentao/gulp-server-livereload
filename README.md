@@ -50,8 +50,7 @@ gulp.task('webserver', function() {
 
 If you run `gulp webserver` your browser should automatically open up to `http://localhost:8000` and show a directory listing of the `app` folder.
 
-**Note:** In order for the livereload browser-side code to be injected properly
-your HTML must have a closing `</body> tag.
+**Note:** In order for the livereload browser-side code to be injected properly your HTML must have a closing `</body>` tag.
 
 ### Command-line
 
@@ -192,7 +191,7 @@ gulp.task('webserver', function() {
 });
 ```
 
-#### How can I use `html5Mode` for my single page app with this plugin?
+#### How can I use non-hash URLs for my single page app (i.e. HTML5 mode) with this plugin?
 
 When you're building a single-page app with non-hash URLs (html5 mode) then you 
 want the server to always serve up the same file for every URL. This is where 
@@ -206,6 +205,38 @@ gulp.task('webserver', function() {
     }));
 });
 ```
+
+### How can I use this with CSS preprocessors such as LESS or SASS?
+
+If you use a CSS preprocessor in gulp, you'll need to run its gulp task (typically with `gulp-watch`) together with the server, so that  LESS/SASS files are compiled as you save.
+
+You'll also want to configure livereload to ignore changes to the source files, and instead let it only handle changes to the compiled CSS (which will be refreshed inline).
+
+```js
+var watch = require('gulp-watch');
+
+gulp.task('watch', function () {
+  watch('./styles/*.less', batch(function (events, done) {
+    gulp.start('default', done);
+  }));
+});
+
+gulp.task('webserver', ['watch'], function () {
+  gulp.src('.')
+    .pipe(server({
+      livereload: {
+        enable: true,
+        filter: function (filename, cb) {
+          cb(!/\.(sa|le)ss$|node_modules/.test(filename);
+        }
+      },
+      directoryListing: true,
+      open: true
+    }));
+});
+```
+
+_Note: the livereload server automatically handles generated sourcemap files properly so don't worry about them_.
 
 ## License
 
