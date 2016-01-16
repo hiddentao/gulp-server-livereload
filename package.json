@@ -37,13 +37,14 @@
     "connect": "~3.1.1",
     "connect-inject": "~0.3.2",
     "gulp-util": "~2.2.19",
+    "lodash": "^4.0.0",
     "node-watch": "^0.3.4",
     "node.extend": "~1.0.10",
     "open": "~0.0.5",
     "proxy-middleware": "~0.15.0",
     "serve-index": "~1.1.4",
     "serve-static": "~1.5.2",
-    "socket.io": "~1.0.6",
+    "socket.io": "^1.4.4",
     "through2": "~0.5.1",
     "vinyl-fs": "^1.0.0"
   }
