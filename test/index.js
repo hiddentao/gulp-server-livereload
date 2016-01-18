@@ -1,3 +1,5 @@
+var _ = require('lodash');
+var Q = require('bluebird');
 var path = require('path');
 var request = require('supertest');
 var webserver = require('../src');
@@ -5,6 +7,9 @@ var File = require('gulp-util').File;
 
 // Some configuration to enable https testing
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+
+var DEFAULT_SERVER_START_WAIT_MS = 1000;
+var DEFAULT_SERVER_KILL_WAIT_MS = 500;
 
 describe('gulp-server-livereload', function() {
 
@@ -23,26 +28,34 @@ describe('gulp-server-livereload', function() {
     path: __dirname + '/fixtures/directoryProxied'
   });
 
-  afterEach(function() {
+  var directoryFallback = new File({
+    path: path.join(__dirname, 'fixtures/directoryFallback')
+  });
+
+  afterEach(function(done) {
     stream.emit('kill');
+
     if (proxyStream) {
       proxyStream.emit('kill');
       proxyStream = undefined;
     }
+
+    Q.delay(DEFAULT_SERVER_KILL_WAIT_MS).then(done, done);
   });
 
 
   it('should work with default options', function(done) {
     stream = webserver();
 
-    stream.write(rootDir, function(err) {
-      if (err) return done(err);
-
-      request('http://localhost:8000')
-        .get('/')
-        .expect(200, /Hello World/)
-        .end(done);
-    });
+    Q.promisify(stream.write, { context: stream })(rootDir)
+      .delay(DEFAULT_SERVER_START_WAIT_MS)
+      .then(function() {
+        request('http://localhost:8000')
+          .get('/')
+          .expect(200, /Hello World/)
+          .end(done);
+      })
+      .catch(done);
   });
 
 
@@ -51,15 +64,15 @@ describe('gulp-server-livereload', function() {
       port: 1111
     });
 
-    stream.write(rootDir);
-
-    request('http://localhost:1111')
-      .get('/')
-      .expect(200, /Hello World/)
-      .end(function(err) {
-        if (err) return done(err);
-        done(err);
-      });
+    Q.promisify(stream.write, { context: stream })(rootDir)
+      .delay(DEFAULT_SERVER_START_WAIT_MS)
+      .then(function() {
+        request('http://localhost:1111')
+          .get('/')
+          .expect(200, /Hello World/)
+          .end(done);      
+      })
+      .catch(done);
   });
 
 
@@ -68,15 +81,15 @@ describe('gulp-server-livereload', function() {
       host: '0.0.0.0'
     });
 
-    stream.write(rootDir);
-
-    request('http://0.0.0.0:8000')
-      .get('/')
-      .expect(200, /Hello World/)
-      .end(function(err) {
-        if (err) return done(err);
-        done(err);
-      });
+    Q.promisify(stream.write, { context: stream })(rootDir)
+      .delay(DEFAULT_SERVER_START_WAIT_MS)
+      .then(function() {
+        request('http://0.0.0.0:8000')
+          .get('/')
+          .expect(200, /Hello World/)
+          .end(done);
+      })
+      .catch(done);
   });
 
 
@@ -85,15 +98,15 @@ describe('gulp-server-livereload', function() {
       https: true
     });
 
-    stream.write(rootDir);
-
-    request('https://localhost:8000')
-      .get('/')
-      .expect(200, /Hello World/)
-      .end(function(err) {
-        if (err) return done(err);
-        done(err);
-      });
+    Q.promisify(stream.write, { context: stream })(rootDir)
+      .delay(DEFAULT_SERVER_START_WAIT_MS)
+      .then(function() {
+        request('https://localhost:8000')
+          .get('/')
+          .expect(200, /Hello World/)
+          .end(done);
+      })
+      .catch(done);
   });
 
 
@@ -105,15 +118,15 @@ describe('gulp-server-livereload', function() {
       }
     });
 
-    stream.write(rootDir);
-
-    request('https://localhost:8000')
-      .get('/')
-      .expect(200, /Hello World/)
-      .end(function(err) {
-        if (err) return done(err);
-        done(err);
-      });
+    Q.promisify(stream.write, { context: stream })(rootDir)
+      .delay(DEFAULT_SERVER_START_WAIT_MS)
+      .then(function() {
+        request('https://localhost:8000')
+          .get('/')
+          .expect(200, /Hello World/)
+          .end(done);
+      })
+      .catch(done);
   });
 
 
@@ -122,12 +135,15 @@ describe('gulp-server-livereload', function() {
       defaultFile: 'default.html'
     });
 
-    stream.write(rootDir);
-
-    request('http://localhost:8000')
-      .get('/')
-      .expect(200, /Default/)
-      .end(done);
+    Q.promisify(stream.write, { context: stream })(rootDir)
+      .delay(DEFAULT_SERVER_START_WAIT_MS)
+      .then(function() {
+        request('http://localhost:8000')
+          .get('/')
+          .expect(200, /Default/)
+          .end(done);
+      })
+      .catch(done);
   });
 
 
@@ -136,12 +152,15 @@ describe('gulp-server-livereload', function() {
       directoryListing: true
     });
 
-    stream.write(directoryIndexMissingDir);
-
-    request('http://localhost:8000')
-      .get('/')
-      .expect(200,/listing directory/)
-      .end(done);
+    Q.promisify(stream.write, { context: stream })(directoryIndexMissingDir)
+      .delay(DEFAULT_SERVER_START_WAIT_MS)
+      .then(function() {
+        request('http://localhost:8000')
+          .get('/')
+          .expect(200,/listing directory/)
+          .end(done);
+      })
+      .catch(done);
   });
 
 
@@ -150,12 +169,15 @@ describe('gulp-server-livereload', function() {
       directoryListing: false
     });
 
-    stream.write(directoryIndexMissingDir);
-
-    request('http://localhost:8000')
-      .get('/')
-      .expect(404,/Cannot GET/)
-      .end(done);
+    Q.promisify(stream.write, { context: stream })(directoryIndexMissingDir)
+      .delay(DEFAULT_SERVER_START_WAIT_MS)
+      .then(function() {
+        request('http://localhost:8000')
+          .get('/')
+          .expect(404,/Cannot GET/)
+          .end(done);
+      })
+      .catch(done);
   });
 
 
@@ -164,21 +186,24 @@ describe('gulp-server-livereload', function() {
       livereload: true
     });
 
-    stream.write(rootDir);
+    Q.promisify(stream.write, { context: stream })(rootDir)
+      .delay(DEFAULT_SERVER_START_WAIT_MS)
+      .then(function() {
+        request('http://localhost:8000')
+          .get('/')
+          .expect(200,/Hello World/)
+          .end(function(err) {
+            if (err) {
+              return done(err);
+            }
 
-    request('http://localhost:8000')
-      .get('/')
-      .expect(200,/Hello World/)
-      .end(function(err) {
-        if (err) {
-          return done(err);
-        }
-
-        request('http://localhost:35729')
-          .get('/socket.io.js')
-          .expect(200,/socket\.io/)
-          .end(done);
-      });      
+            request('http://localhost:35729')
+              .get('/socket.io.js')
+              .expect(200,/socket\.io/)
+              .end(done);
+          });      
+      })
+      .catch(done);
   });
 
 
@@ -187,33 +212,35 @@ describe('gulp-server-livereload', function() {
       livereload: false
     });
 
-    stream.write(rootDir);
+    Q.promisify(stream.write, { context: stream })(rootDir)
+      .delay(DEFAULT_SERVER_START_WAIT_MS)
+      .then(function() {
+        request('http://localhost:8000')
+          .get('/')
+          .expect(200,/Hello World/)
+          .end(function(err) {
+            if (err) return done(err);
 
-    request('http://localhost:8000')
-      .get('/')
-      .expect(200,/Hello World/)
-      .end(function(err) {
-        if (err) return done(err);
-      });
-    request('http://localhost:35729')
-      .get('/socket.io.js')
-      .end(function(err) {
-        if(err && err.code === "ECONNREFUSED") {
-          done();
-        } else {
-          if (err) {
-            return done(err);
-          } else {
-            done(new Error('livereload should not be started when shorthand middleware setting is set to false'));
-          }
-        }
-
-      });
+            request('http://localhost:35729')
+              .get('/socket.io.js')
+              .end(function(err) {
+                if(err && err.code === "ECONNREFUSED") {
+                  done();
+                } else {
+                  if (err) {
+                    return done(err);
+                  } else {
+                    done(new Error('livereload should not be started when shorthand middleware setting is set to false'));
+                  }
+                }
+              });
+          });
+      })
+      .catch(done);
   });
 
 
   it('should proxy requests to localhost:8001', function(done) {
-
     stream = webserver({
       proxies: [{
         source: '/proxied',
@@ -221,27 +248,31 @@ describe('gulp-server-livereload', function() {
       }]
     });
 
-    stream.write(rootDir);
-
     proxyStream = webserver({
       port: 8001
     });
 
-    proxyStream.write(directoryProxiedDir);
-
-    request('http://localhost:8000')
-      .get('/')
-      .expect(200, /Hello World/)
-      .end(function(err) {
-        if (err) {
-          return done(err);
-        }
-
+    Q.promisify(stream.write, { context: stream })(rootDir)
+      .then(function() {
+        return Q.promisify(proxyStream.write, { context: proxyStream })(directoryProxiedDir)
+      })
+      .delay(DEFAULT_SERVER_START_WAIT_MS)
+      .then(function() {
         request('http://localhost:8000')
-          .get('/proxied')
-          .expect(200, /I am Ron Burgandy?/)
-          .end(done);
-      });
+          .get('/')
+          .expect(200, /Hello World/)
+          .end(function(err) {
+            if (err) {
+              return done(err);
+            }
+
+            request('http://localhost:8000')
+              .get('/proxied')
+              .expect(200, /I am Ron Burgandy?/)
+              .end(done);
+          });
+      })
+      .catch(done);
   });
 
   it('should configure proxy with options', function(done) {
@@ -258,36 +289,66 @@ describe('gulp-server-livereload', function() {
       }]
     });
 
-    stream.write(rootDir);
-
     proxyStream = webserver({
       port: 8001
     });
 
-    proxyStream.write(directoryProxiedDir);
-
-    request('http://localhost:8000')
-      .get('/')
-      .expect(200, /Hello World/)
-      .end(function(err) {
-        if (err) {
-          return done(err);
-        }
-
+    Q.promisify(stream.write, { context: stream })(rootDir)
+      .then(function() {
+        return Q.promisify(proxyStream.write, { context: proxyStream })(directoryProxiedDir)
+      })
+      .delay(DEFAULT_SERVER_START_WAIT_MS)
+      .then(function() {
         request('http://localhost:8000')
-          .get('/proxied')
-          .expect(200, /I am Ron Burgandy?/)
-          .end(done);
-      });
+          .get('/')
+          .expect(200, /Hello World/)
+          .end(function(err) {
+            if (err) {
+              return done(err);
+            }
+
+            request('http://localhost:8000')
+              .get('/proxied')
+              .expect(200, /I am Ron Burgandy?/)
+              .end(done);
+          });
+      })
+      .catch(done);
+
   });
 
-  this.timeout(20);
-  it('should accept `true` as an open option', function(done){
+
+  it('should allow for fallback file', function(done) {
+
+    stream = webserver({
+      fallback: 'fallback.html',
+    });
+
+    Q.promisify(stream.write, { context: stream })(directoryFallback)
+      .then(function() {
+        stream.end();
+      })
+      .delay(DEFAULT_SERVER_START_WAIT_MS)
+      .then(function() {
+        request('http://localhost:8000')
+          .get('/')
+          .expect(200, /fallback/)
+          .end(done);
+      })
+      .catch(done);
+
+  });
+
+
+  it('should accept `true` as an open option', function(done){    
     stream = webserver({
       open: true
     });
-    stream.write(rootDir);
-    setTimeout(done, 15);
+
+    Q.promisify(stream.write, { context: stream })(rootDir)
+      .delay(DEFAULT_SERVER_START_WAIT_MS)
+      .then(done)
+      .catch(done);
   });
 
 
