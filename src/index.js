@@ -34,7 +34,7 @@ module.exports = function(options) {
     host: 'localhost',
     port: 8000,
     defaultFile: 'index.html',
-    fallback: false,
+    fallback: null,
     https: false,
     open: false,
     log: 'info',
