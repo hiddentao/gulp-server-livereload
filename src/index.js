@@ -186,7 +186,9 @@ module.exports = function(options) {
     var ioServer = config.livereload.ioServer = 
       http.createServer(ioApp).listen(config.livereload.port, config.host);
 
-    io.attach(ioServer);
+    io.attach(ioServer, {
+      path: '/socket.io'
+    });
   }
 
   // http server
