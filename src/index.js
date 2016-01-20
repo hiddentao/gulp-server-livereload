@@ -189,6 +189,8 @@ module.exports = function(options) {
     io.attach(ioServer, {
       path: '/socket.io'
     });
+
+    gutil.log('Livereload started at', gutil.colors.gray('http' + (config.https ? 's' : '') + '://' + config.host + ':' + config.livereload.port));
   }
 
   // http server
