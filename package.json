@@ -30,11 +30,11 @@
   "homepage": "https://github.com/hiddentao/gulp-server-livereload",
   "devDependencies": {
     "bluebird": "^3.1.1",
-    "lodash": "^4.0.0",
     "mocha": "~1.20.1",
     "supertest": "~0.13.0"
   },
   "dependencies": {
+    "lodash": "^4.0.0",
     "commander": "^2.8.1",
     "connect": "~3.1.1",
     "connect-inject": "~0.3.2",

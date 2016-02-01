@@ -1,6 +1,7 @@
 "use strict";
 
-var through = require('through2'),
+var _ = require('lodash'),
+  through = require('through2'),
   gutil = require('gulp-util'),
   http = require('http'),
   https = require('https'),
@@ -56,6 +57,7 @@ module.exports = function(options) {
     // Middleware: Livereload
     livereload: {
       enable: false,
+      markupHost: null,
       port: 35729,
       filter: function(filename, cb) {
         cb( !(/node_modules/.test(filename)) );
@@ -82,9 +84,6 @@ module.exports = function(options) {
   // Deep extend user provided options over the all of the defaults
   // Allow shorthand syntax, using the enable property as a flag
   var config = enableMiddlewareShorthand(defaults, options, ['directoryListing', 'livereload']);
-
-  // If it wasn't provided, use the server host:
-  config.livereload.host = config.livereload.host || config.host;
 
   var openInBrowser = function () {
     if (config.open === false) return;
@@ -113,20 +112,25 @@ module.exports = function(options) {
 
   // socket.io
   if (config.livereload.enable) {
-    var ioServerOrigin = 'http://' + config.livereload.host + ':' + config.livereload.port;
-
     var snippetParams = [];
 
     if (config.livereload.clientConsole) {
       snippetParams.push("extra=capture-console");
     }
 
+    // If it wasn't provided, use the server host:
+    var markupHost = !!_.get(config.livereload.markupHost, 'length') 
+      ? "'" + config.livereload.markupHost + "'"
+      : null;
+
     var snippet =
-      "<script type='text/javascript' async defer src='"
-      + ioServerOrigin
-      + "/livereload.js?"
-      + snippetParams.join('&')
-      + "'></script>";
+      "<script type=\"text/javascript\">"
+      + "var _lrscript = document.createElement('script');"
+      + "_lrscript.type = 'text/javascript';"
+      + "_lrscript.defer = _lrscript.async = true;"
+      + "_lrscript.src = 'http://' + ((" + markupHost + "||location.host).split(':')[0]) + ':"+config.livereload.port+"/livereload.js?"+snippetParams.join('&')+"';"
+      + "document.body.appendChild(_lrscript);"
+      + "</script>";
 
     app.use(inject({
       snippet: snippet,
