@@ -128,7 +128,7 @@ module.exports = function(options) {
       + "var _lrscript = document.createElement('script');"
       + "_lrscript.type = 'text/javascript';"
       + "_lrscript.defer = _lrscript.async = true;"
-      + "_lrscript.src = 'http://' + ((" + markupHost + "||location.host).split(':')[0]) + ':"+config.livereload.port+"/livereload.js?"+snippetParams.join('&')+"';"
+      + "_lrscript.src = '//' + ((" + markupHost + "||location.host).split(':')[0]) + ':"+config.livereload.port+"/livereload.js?"+snippetParams.join('&')+"';"
       + "document.body.appendChild(_lrscript);"
       + "</script>";
 
