@@ -119,7 +119,7 @@ module.exports = function(options) {
     }
 
     // If it wasn't provided, use the server host:
-    var markupHost = !!_.get(config.livereload.markupHost, 'length') 
+    var markupHost = !!_.get(config.livereload.markupHost, 'length')
       ? "'" + config.livereload.markupHost + "'"
       : null;
 
@@ -132,13 +132,25 @@ module.exports = function(options) {
       + "document.body.appendChild(_lrscript);"
       + "</script>";
 
+    var prepend = function(w, s) {
+      return s + w;
+    };
+
+    var append = function(w, s) {
+      return w + s;
+    }
+
     app.use(inject({
       snippet: snippet,
       rules: [{
         match: /<\/body>/,
-        fn: function(w, s) {
-          return s + w;
-        }
+        fn: prepend
+      }, {
+        match: /<\/html>/,
+        fn: prepend
+      }, {
+        match: /<\!DOCTYPE.+>/,
+        fn: append
       }]
     }));
 
