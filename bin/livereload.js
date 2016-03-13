@@ -20,5 +20,7 @@ if (program.noBrowser)
 	opts.open = false;
 if (program.port)
 	opts.port = program.port;
+if (program.host)
+	opts.host = program.host;
 
 fs.src('.').pipe(server(opts));
