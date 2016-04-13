@@ -85,6 +85,11 @@ module.exports = function(options) {
   // Allow shorthand syntax, using the enable property as a flag
   var config = enableMiddlewareShorthand(defaults, options, ['directoryListing', 'livereload']);
 
+  var httpsOptions = {
+    key: fs.readFileSync(config.https.key || __dirname + '/../ssl/dev-key.pem'),
+    cert: fs.readFileSync(config.https.cert || __dirname + '/../ssl/dev-cert.pem')
+  };
+
   var openInBrowser = function () {
     if (config.open === false) return;
     open('http' + (config.https ? 's' : '') + '://' + config.host + ':' + config.port);
@@ -202,8 +207,12 @@ module.exports = function(options) {
 
     ioApp.use(serveStatic(BROWSER_SCIPTS_DIR, { index: false }));
 
+    var ioServerBase = config.https 
+      ? https.createServer(httpsOptions, ioApp)
+      : http.createServer(ioApp);
+
     var ioServer = config.livereload.ioServer =
-      http.createServer(ioApp).listen(config.livereload.port, config.host);
+      ioServerBase.listen(config.livereload.port, config.host);
 
     io.attach(ioServer, {
       path: '/socket.io'
@@ -215,12 +224,7 @@ module.exports = function(options) {
   // http server
   var webserver = null;
   if (config.https) {
-    var options = {
-      key: fs.readFileSync(config.https.key || __dirname + '/../ssl/dev-key.pem'),
-      cert: fs.readFileSync(config.https.cert || __dirname + '/../ssl/dev-cert.pem')
-    };
-
-    webserver = https.createServer(options, app);
+    webserver = https.createServer(httpsOptions, app);
   }
   else {
     webserver = http.createServer(app);
