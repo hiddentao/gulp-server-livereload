@@ -165,40 +165,32 @@ module.exports = function(options) {
     io.on('connection', function(socket){
       gutil.log('Livereload client connected');
 
-      socket.on('console_log', function(data){
-        var args = [
-          gutil.colors.green('log')
-        ];
+      socket.on('console', function(params){
+        var method = params.method,
+          data = params.data,
+          color = gutil.colors.green(method);
+
+        switch (method) {
+          case 'error':
+            color = gutil.colors.red('error');
+            break;
+          case 'warn':
+            color = gutil.colors.yellow('warn');
+            break;
+          case 'info':
+            color = gutil.colors.cyan('info');
+            break;
+          case 'debug':
+          case 'trace':
+            color = gutil.colors.blue('debug');
+            break;
+        }
+        var args = [color];
+
         for (var i in data) {
           args.push(data[i]);
         }
-        gutil.log.apply(null, args);
-      });
-      socket.on('console_warn', function(data){
-        var args = [
-          gutil.colors.yellow('warn')
-        ];
-        for (var i in data) {
-          args.push(data[i]);
-        }
-        gutil.log.apply(null, args);
-      });
-      socket.on('console_info', function(data){
-        var args = [
-          gutil.colors.cyan('info')
-        ];
-        for (var i in data) {
-          args.push(data[i]);
-        }
-        gutil.log.apply(null, args);
-      });
-      socket.on('console_error', function(data){
-        var args = [
-          gutil.colors.red('err')
-        ];
-        for (var i in data) {
-          args.push(data[i]);
-        }
+
         gutil.log.apply(null, args);
       });
     });

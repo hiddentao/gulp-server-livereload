@@ -5,15 +5,12 @@
     return;
   }
 
-  var __console;
+  var __console = {};
 
-  if (typeof console !== "undefined") {
-    __console = console;
-  }
+  ['error','info','log','warn'].forEach(function(method) {
+    window.console[method] = (function() {
+      __console[method] = window.console[method];
 
-  var methods = ['info','log','error','warn'];
-  for (var i in methods) {
-    window.console[methods[i]] = (function(method){
       return function() {
         var args = arguments, success;
 
@@ -26,7 +23,10 @@
 
         try {
           if (success) {
-            socket.emit('console_' + method, args);
+            socket.emit('console', {
+              method: method,
+              data: args
+            });
           }
         } catch (e) {}
 
@@ -38,6 +38,7 @@
           __console.error(e, arguments);
         }
       };
-    })(methods[i]);
-  }
+    })();
+  });
+
 })();
