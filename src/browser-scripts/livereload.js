@@ -61,6 +61,47 @@
   };
 
 
+  /*
+  Reload page
+
+  We check that page is live and can be accessed before we actually do it. 
+  This prevents the browser from throwing a 404 error.
+   */
+  var __currentlyReloading = false;
+  var __reloadPage = function() {
+    if (__currentlyReloading) {
+      return;
+    } else {
+      __currentlyReloading = true;
+    }
+
+    var __reloadPageInnerLoop;
+
+    (__reloadPageInnerLoop = function() {
+      __log('wait until we can reload browser');
+
+      var request = new XMLHttpRequest();  
+      request.open('GET', location.href, true);
+      request.onreadystatechange = function(){
+        if (request.readyState === 4){
+          if (200 <= request.status) {
+            __log('reloading page...');
+
+            location.reload();
+          } else {
+            setTimeout(function() {
+              __reloadPageInnerLoop();
+            }, 1000);            
+          }
+        }
+      };
+      request.send();
+    })();
+  };
+
+
+
+
   if (!window._onLiveReloadFileChanged) {
     window._onLiveReloadFileChanged = function(file) {
       if (!file) {
@@ -93,12 +134,7 @@
       }
       // other stuff changed
       else {
-        __log('reload browser');
-
-        // disable "confirm reload" dialogs
-        window.onbeforeunload = null;
-        // reload whole page
-        location.reload();
+        __reloadPage();
       }
     }
   }
