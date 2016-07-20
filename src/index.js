@@ -98,6 +98,16 @@ module.exports = function(options) {
 
   // connect app
   var app = connect();
+
+  // Disable browser cache(fix #15)
+  app.use(function (req, res, next) {
+    res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+    res.setHeader("Pragma", "no-cache");
+    res.setHeader("Expires", 0);
+
+    next();
+  });
+
   // Proxy requests
   for (var i = 0, len = config.proxies.length; i < len; i++) {
     var proxyoptions = url.parse(config.proxies[i].target);
