@@ -287,8 +287,15 @@ module.exports = function(options) {
         var fallbackFile = file.path + '/' + config.fallback;
         if (fs.existsSync(fallbackFile)) {
           app.use(function(req, res) {
-            res.setHeader('Content-Type', 'text/html; charset=UTF-8');
-            fs.createReadStream(fallbackFile).pipe(res);
+            var parsedUrl = url.parse(req.url);
+            var staticFileReq = parsedUrl.pathname.indexOf('.') > -1;
+            if (staticFileReq) {
+              res.statusCode = 404;
+              res.end();
+            } else {
+              res.setHeader('Content-Type', 'text/html; charset=UTF-8');
+              fs.createReadStream(fallbackFile).pipe(res);
+            }
           });
         }
       });
