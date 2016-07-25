@@ -36,7 +36,7 @@ module.exports = function(options) {
     port: 8000,
     defaultFile: 'index.html',
     fallback: null,
-    fallbackLogic: function(req, res, fallbackFile) {
+    fallbackLogic: function(req, res) {
       res.setHeader('Content-Type', 'text/html; charset=UTF-8');
       fs.createReadStream(fallbackFile).pipe(res);
     },
@@ -290,7 +290,9 @@ module.exports = function(options) {
       files.forEach(function(file){
         var fallbackFile = file.path + '/' + config.fallback;
         if (fs.existsSync(fallbackFile)) {
-          app.use(config.fallbackLogic(req, res, fallbackFile));
+          app.use(function(req, res) {
+            return config.fallbackLogic(req, res, fallbackFile);
+          });
         }
       });
     }
