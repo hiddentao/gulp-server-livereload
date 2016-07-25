@@ -36,7 +36,7 @@ module.exports = function(options) {
     port: 8000,
     defaultFile: 'index.html',
     fallback: null,
-    fallbackLogic: function(req, res) {
+    fallbackLogic: function(req, res, fallbackFile) {
       res.setHeader('Content-Type', 'text/html; charset=UTF-8');
       fs.createReadStream(fallbackFile).pipe(res);
     },
