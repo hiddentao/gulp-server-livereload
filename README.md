@@ -92,6 +92,8 @@ Key | Type | Default | Description |
 `directoryListing` | Boolean/Object | `false` | whether to display a directory listing. For advanced options, provide an object. You can use the `path property to set a custom path or the `options` property to set custom [serve-index](https://github.com/expressjs/serve-index) options.
 `defaultFile` | String | `index.html` | default file to show when root URL is requested. If `directoryListing` is enabled then this gets disabled.
 `fallback` | String | `undefined` | file to fall back to (relative to webserver root) when requested resource not found. Useful when building single-page apps with non-has URLs.
+`fallbackLogic` | Function | `see index.js` | Middleware function responsible for writing 
+the fallback file to output, or anything else you might want to do instead.
 `open` | Boolean/Object | `false` | open the localhost server in the browser
 `https` | Boolean/Object | `false` | whether to use https or not. By default, `gulp-server-livereload` provides you with a development certificate but you remain free to specify a path for your key and certificate by providing an object like this one: `{key: 'path/to/key.pem', cert: 'path/to/cert.pem'}`.
 `log` | String | `info` | If set to `debug` you will see all requests logged to the console.
@@ -204,6 +206,31 @@ gulp.task('webserver', function() {
     }));
 });
 ```
+
+You can control exactly how the fallback mode works using the `fallbackLogic` 
+parameter. For example, if you wanted to handle PNG files separately and not 
+have the `fallback` get returned for such requests:
+
+```js
+gulp.task('webserver', function() {
+  gulp.src('app')
+    .pipe(server({
+      fallback: 'index.html',
+      fallbackConfig: function(req, res, fallbackFile) {
+        var parsedUrl = url.parse(req.url);
+
+        if (0 < parsedUrl.pathname.indexOf('.png')) {
+          res.statusCode = 404;
+          res.end();
+        } else {
+          // default fallback config
+          fs.createReadStream(fallbackFile).pipe(res);
+        }
+      },
+    }));
+});
+```
+
 
 ### How can I use this with CSS preprocessors such as LESS or SASS?
 
