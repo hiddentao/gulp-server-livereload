@@ -36,6 +36,10 @@ module.exports = function(options) {
     port: 8000,
     defaultFile: 'index.html',
     fallback: null,
+    fallbackLogic: function(req, res, fallbackFile) {
+      res.setHeader('Content-Type', 'text/html; charset=UTF-8');
+      fs.createReadStream(fallbackFile).pipe(res);
+    },
     https: false,
     open: false,
     log: 'info',
@@ -209,7 +213,7 @@ module.exports = function(options) {
 
     ioApp.use(serveStatic(BROWSER_SCIPTS_DIR, { index: false }));
 
-    var ioServerBase = config.https 
+    var ioServerBase = config.https
       ? https.createServer(httpsOptions, ioApp)
       : http.createServer(ioApp);
 
@@ -287,8 +291,7 @@ module.exports = function(options) {
         var fallbackFile = file.path + '/' + config.fallback;
         if (fs.existsSync(fallbackFile)) {
           app.use(function(req, res) {
-            res.setHeader('Content-Type', 'text/html; charset=UTF-8');
-            fs.createReadStream(fallbackFile).pipe(res);
+            return config.fallbackLogic(req, res, fallbackFile);
           });
         }
       });
