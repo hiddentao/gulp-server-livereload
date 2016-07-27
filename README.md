@@ -82,22 +82,21 @@ _Note: not all of these options are currently available via the CLI executable_
 
 Key | Type | Default | Description |
 --- | --- | --- | --- |
-`host` | String | `localhost` | hostname of the webserver
-`port` | Number | `8000` | port of the webserver
-`livereload` | Boolean/Object | `false` | whether to use livereload. For advanced options, provide an object.
-`livereload.port` | Number | `35729` | port for livereload server to listen on.
-`livereload.markupHost` | String | `null` | the hostname to use for the livereload server in the injected SCRIPT tag. Default is to calculate it dynamically in the browser.
-`livereload.filter` | Function | - | function to filter out files to watch (default filters out `node_modules`).
-`livereload.clientConsole` | Boolean | `false` | whether to capture `window.console` output from the client and send it to the back-end for display.
-`directoryListing` | Boolean/Object | `false` | whether to display a directory listing. For advanced options, provide an object. You can use the `path property to set a custom path or the `options` property to set custom [serve-index](https://github.com/expressjs/serve-index) options.
-`defaultFile` | String | `index.html` | default file to show when root URL is requested. If `directoryListing` is enabled then this gets disabled.
-`fallback` | String | `undefined` | file to fall back to (relative to webserver root) when requested resource not found. Useful when building single-page apps with non-has URLs.
-`fallbackLogic` | Function | `see index.js` | Middleware function responsible for writing 
-the fallback file to output, or anything else you might want to do instead.
-`open` | Boolean/Object | `false` | open the localhost server in the browser
-`https` | Boolean/Object | `false` | whether to use https or not. By default, `gulp-server-livereload` provides you with a development certificate but you remain free to specify a path for your key and certificate by providing an object like this one: `{key: 'path/to/key.pem', cert: 'path/to/cert.pem'}`.
-`log` | String | `info` | If set to `debug` you will see all requests logged to the console.
-`proxies` | Array | `[]`| a list of proxy objects.  Each proxy object can be specified by `{source: '/abc', target: 'http://localhost:8080/abc', options: {headers: {'ABC_HEADER': 'abc'}}}`.
+`host` | String | `localhost` | hostname of the webserver |
+`port` | Number | `8000` | port of the webserver |
+`livereload` | Boolean/Object | `false` | whether to use livereload. For advanced options, provide an object. |
+`livereload.port` | Number | `35729` | port for livereload server to listen on. |
+`livereload.markupHost` | String | `null` | the hostname to use for the livereload server in the injected SCRIPT tag. Default is to calculate it dynamically in the browser. |
+`livereload.filter` | Function | - | function to filter out files to watch (default filters out `node_modules`). |
+`livereload.clientConsole` | Boolean | `false` | whether to capture `window.console` output from the client and send it to the back-end for display. |
+`directoryListing` | Boolean/Object | `false` | whether to display a directory listing. For advanced options, provide an object. You can use the `path property to set a custom path or the `options` property to set custom [serve-index](https://github.com/expressjs/serve-index) options. |
+`defaultFile` | String | `index.html` | default file to show when root URL is requested. If `directoryListing` is enabled then this gets disabled. |
+`fallback` | String | `undefined` | file to fall back to (relative to webserver root) when requested resource not found. Useful when building single-page apps with non-has URLs. |
+`fallbackLogic` | Function | `see index.js` | Middleware function responsible for writing the fallback file to output, or anything else you might want to do instead. |
+`open` | Boolean/Object | `false` | open the localhost server in the browser |
+`https` | Boolean/Object | `false` | whether to use https or not. By default, `gulp-server-livereload` provides you with a development certificate but you remain free to specify a path for your key and certificate by providing an object like this one: `{key: 'path/to/key.pem', cert: 'path/to/cert.pem'}`. |
+`log` | String | `info` | If set to `debug` you will see all requests logged to the console. |
+`proxies` | Array | `[]`| a list of proxy objects.  Each proxy object can be specified by `{source: '/abc', target: 'http://localhost:8080/abc', options: {headers: {'ABC_HEADER': 'abc'}}}`. |
 
 
 ## Livereload behaviour
