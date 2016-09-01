@@ -23,4 +23,8 @@ if (program.port)
 if (program.host)
 	opts.host = program.host;
 
+opts.livereload = {
+  enable: true
+};
+
 fs.src('.').pipe(server(opts));
