@@ -1,7 +1,7 @@
 {
   "name": "gulp-server-livereload",
-  "version": "1.8.3",
-  "description": "Gulp plugin to run a local webserver with livereload enabled via socket.io",
+  "version": "1.8.4",
+  "description": "Gulp plugin to run a local webserver with livereload enabled via socket.io. Also comes with standalone command-line interface.",
   "main": "src/index.js",
   "scripts": {
     "test": "node_modules/.bin/mocha",
