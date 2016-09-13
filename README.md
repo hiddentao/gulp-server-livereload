@@ -215,10 +215,8 @@ gulp.task('webserver', function() {
   gulp.src('app')
     .pipe(server({
       fallback: 'index.html',
-      fallbackConfig: function(req, res, fallbackFile) {
-        var parsedUrl = url.parse(req.url);
-
-        if (0 < parsedUrl.pathname.indexOf('.png')) {
+      fallbackLogic: function(req, res, fallbackFile) {
+        if (req.url.match(/\.png$/i)) {
           res.statusCode = 404;
           res.end();
         } else {
