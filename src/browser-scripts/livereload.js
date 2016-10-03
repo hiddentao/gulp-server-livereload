@@ -7,8 +7,9 @@
   }
 
 
+  var __consoleLog = window.console.log;
   var __log = function(msg) {
-    console.log('LIVERELOAD: ' + msg);
+    __consoleLog('LIVERELOAD: ' + msg);
   };
 
 
