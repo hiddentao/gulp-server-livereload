@@ -84,7 +84,7 @@ Key | Type | Default | Description |
 --- | --- | --- | --- |
 `host` | String | `localhost` | hostname of the webserver |
 `port` | Number | `8000` | port of the webserver |
-`livereload` | Boolean/Object | `false` | whether to use livereload. For advanced options, provide an object. |
+`livereload` | Boolean/Object | `false` | whether to use livereload. For advanced options, provide an object with `enable` set to `true`. |
 `livereload.port` | Number | `35729` | port for livereload server to listen on. |
 `livereload.markupHost` | String | `null` | the hostname to use for the livereload server in the injected SCRIPT tag. Default is to calculate it dynamically in the browser. |
 `livereload.filter` | Function | - | function to filter out files to watch (default filters out `node_modules`). |
