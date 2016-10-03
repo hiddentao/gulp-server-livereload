@@ -193,8 +193,8 @@ gulp.task('webserver', function() {
 
 #### How can I use non-hash URLs for my single page app (i.e. HTML5 mode) with this plugin?
 
-When you're building a single-page app with non-hash URLs (html5 mode) then you 
-want the server to always serve up the same file for every URL. This is where 
+When you're building a single-page app with non-hash URLs (html5 mode) then you
+want the server to always serve up the same file for every URL. This is where
 the `fallback` option comes into play:
 
 ```js
@@ -206,8 +206,8 @@ gulp.task('webserver', function() {
 });
 ```
 
-You can control exactly how the fallback mode works using the `fallbackLogic` 
-parameter. For example, if you wanted to handle PNG files separately and not 
+You can control exactly how the fallback mode works using the `fallbackLogic`
+parameter. For example, if you wanted to handle PNG files separately and not
 have the `fallback` get returned for such requests:
 
 ```js
