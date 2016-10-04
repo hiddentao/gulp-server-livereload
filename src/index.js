@@ -37,7 +37,7 @@ function bindLogger(logLevel, kind) {
 
   logLevel = levels.indexOf(logLevel) + 1;
 
-  if (logLevel == 0) {
+  if (!logLevel) {
     throw 'Logging level "' + logLevel + '" does not exist!';
   }
 
