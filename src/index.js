@@ -280,7 +280,7 @@ module.exports = function(options) {
 
   // Create server
   var stream = through.obj(function(file, enc, callback) {
-    if (config.log === 'debug') {
+    if ('debug' === config.log) {
       app.use(function(req, res, next) {
         logger.debug(req.method + ' ' + req.url);
 
