@@ -3,6 +3,8 @@
 var _ = require('lodash'),
   through = require('through2'),
   gutil = require('gulp-util'),
+  gulpLogger = require('gulplog'),
+  glogg = require('glogg'),
   http = require('http'),
   https = require('https'),
   inject = require('connect-inject'),
@@ -22,8 +24,35 @@ var _ = require('lodash'),
 
 var BROWSER_SCIPTS_DIR = path.join(__dirname, 'browser-scripts');
 
+var levels = [
+  'error',
+  'warn',
+  'info',
+  'debug',
+];
+var instanceNumber = 0;
 
+function bindLogger(logLevel, kind) {
+  var logger = glogg('gulp-server-livereload-' + kind + '-' + instanceNumber);
 
+  logLevel = levels.indexOf(logLevel) + 1;
+
+  if (!logLevel) {
+    throw 'Logging level "' + logLevel + '" does not exist!';
+  }
+
+  levels
+    .filter(function (item, i) {
+      return i < logLevel;
+    })
+    .forEach(function (level) {
+      logger.on(level, function () {
+        gulpLogger.info.apply(gulpLogger, arguments);
+      });
+    });
+
+  return logger;
+}
 
 module.exports = function(options) {
   var defaults = {
@@ -43,6 +72,7 @@ module.exports = function(options) {
     https: false,
     open: false,
     log: 'info',
+    clientLog: 'debug',
 
     /**
      *
@@ -89,6 +119,11 @@ module.exports = function(options) {
   // Allow shorthand syntax, using the enable property as a flag
   var config = enableMiddlewareShorthand(defaults, options, ['directoryListing', 'livereload']);
 
+  var logger = bindLogger(config.log, 'server');
+  var clientLogger = bindLogger(config.clientLog, 'client');
+
+  instanceNumber += 1;
+
   var httpsOptions = {
     key: fs.readFileSync(config.https.key || __dirname + '/../ssl/dev-key.pem'),
     cert: fs.readFileSync(config.https.cert || __dirname + '/../ssl/dev-cert.pem')
@@ -122,7 +157,7 @@ module.exports = function(options) {
     proxyoptions.route = config.proxies[i].source;
     app.use(proxy(proxyoptions));
 
-    gutil.log(config.proxies[i].source + ' is proxied.');
+    logger.debug(config.proxies[i].source + ' is proxied.');
   }
   //  directory listing
   if (config.directoryListing.enable) {
@@ -177,35 +212,40 @@ module.exports = function(options) {
     io.serveClient(true);
     io.path("");
     io.on('connection', function(socket){
-      gutil.log('Livereload client connected');
+      logger.info('Livereload client connected');
 
       socket.on('console', function(params){
         var method = params.method,
           data = params.data,
-          color = gutil.colors.green(method);
+          methodLabel = gutil.colors.green(method.toUpperCase()),
+          translatedMethod = 'info';
 
         switch (method) {
           case 'error':
-            color = gutil.colors.red('error');
+            methodLabel = gutil.colors.red('ERROR');
+            translatedMethod = 'error';
             break;
           case 'warn':
-            color = gutil.colors.yellow('warn');
+            methodLabel = gutil.colors.yellow('WARN');
+            translatedMethod = 'warn';
             break;
           case 'info':
-            color = gutil.colors.cyan('info');
+            methodLabel = gutil.colors.cyan('INFO');
+            translatedMethod = 'info';
             break;
           case 'debug':
           case 'trace':
-            color = gutil.colors.blue('debug');
+            methodLabel = gutil.colors.blue('DEBUG');
+            translatedMethod = 'debug';
             break;
         }
-        var args = [color];
+        var args = ['[Client:' + methodLabel + ']'];
 
         for (var i in data) {
           args.push(data[i]);
         }
 
-        gutil.log.apply(null, args);
+        clientLogger[translatedMethod].apply(clientLogger, args);
       });
     });
 
@@ -224,7 +264,7 @@ module.exports = function(options) {
       path: '/socket.io'
     });
 
-    gutil.log('Livereload started at', gutil.colors.gray('http' + (config.https ? 's' : '') + '://' + config.host + ':' + config.livereload.port));
+    logger.debug('Livereload started at', gutil.colors.gray('http' + (config.https ? 's' : '') + '://' + config.host + ':' + config.livereload.port));
   }
 
   // http server
@@ -242,7 +282,7 @@ module.exports = function(options) {
   var stream = through.obj(function(file, enc, callback) {
     if ('debug' === config.log) {
       app.use(function(req, res, next) {
-        gutil.log(req.method + ' ' + req.url);
+        logger.debug(req.method + ' ' + req.url);
 
         next();
       });
@@ -257,7 +297,7 @@ module.exports = function(options) {
       watch(file.path, function(filename) {
         config.livereload.filter(filename, function(shouldReload) {
           if (shouldReload) {
-            gutil.log('Livereload: file changed: ' + filename);
+            logger.debug('Livereload: file changed: ' + filename);
 
             config.livereload.io.sockets.emit('reload');
             // Treat changes to sourcemaps as changes to the original files.
@@ -283,7 +323,7 @@ module.exports = function(options) {
     // start the web server
     webserver.listen(config.port, config.host, openInBrowser);
 
-    gutil.log('Webserver started at', gutil.colors.cyan('http' + (config.https ? 's' : '') + '://' + config.host + ':' + config.port));
+    logger.info('Webserver started at', gutil.colors.cyan('http' + (config.https ? 's' : '') + '://' + config.host + ':' + config.port));
   })
   .on('end', function(){
     if (config.fallback) {

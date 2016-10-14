@@ -7,8 +7,9 @@
   }
 
 
+  var __consoleLog = window.console.log;
   var __log = function(msg) {
-    console.log('LIVERELOAD: ' + msg);
+    __consoleLog('LIVERELOAD: ' + msg);
   };
 
 
@@ -53,8 +54,8 @@
     var lastChar = href.charAt(href.length-1);
     if ('?' !== lastChar && '&' !== lastChar) {
       href += '&';
-    } 
-    
+    }
+
     href += key + '=' + val;
 
     return href;
@@ -64,7 +65,7 @@
   /*
   Reload page
 
-  We check that page is live and can be accessed before we actually do it. 
+  We check that page is live and can be accessed before we actually do it.
   This prevents the browser from throwing a 404 error.
    */
   var __currentlyReloading = false;
@@ -80,7 +81,7 @@
     (__reloadPageInnerLoop = function() {
       __log('wait until we can reload browser');
 
-      var request = new XMLHttpRequest();  
+      var request = new XMLHttpRequest();
       request.open('GET', location.href, true);
       request.onreadystatechange = function(){
         if (request.readyState === 4){
@@ -91,7 +92,7 @@
           } else {
             setTimeout(function() {
               __reloadPageInnerLoop();
-            }, 1000);            
+            }, 1000);
           }
         }
       };
@@ -152,8 +153,8 @@
   var __loadScript = function(path, onload, onerror) {
     __log('load script ' + path);
 
-    var lr = document.createElement('script'); 
-    lr.type = 'text/javascript'; 
+    var lr = document.createElement('script');
+    lr.type = 'text/javascript';
     lr.async = true;
     lr.src = setupInfo.serverUrl + '/' + path;
 
@@ -170,7 +171,7 @@
   __alreadyLoadedExtraScripts = false;
 
   var __loadExtraScripts = function() {
-    if (__alreadyLoadedExtraScripts) { 
+    if (__alreadyLoadedExtraScripts) {
       return;
     }
 
@@ -196,9 +197,9 @@
     }
 
     __log('connecting to server');
-    
+
     var __socket = window.__socket = io.connect(setupInfo.serverUrl);
-    
+
     __socket.on('connect', function() {
       __log('successfully connected');
 
