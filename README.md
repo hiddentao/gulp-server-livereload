@@ -21,8 +21,6 @@ has changed).
 * Comes with a command-line runnable.
 
 
-_This was originally a fork of [gulp-webserver](https://github.com/schickling/gulp-webserver)._
-
 
 ## Installation
 
