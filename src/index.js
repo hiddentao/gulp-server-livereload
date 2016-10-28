@@ -3,7 +3,6 @@
 var _ = require('lodash'),
   through = require('through2'),
   gutil = require('gulp-util'),
-  gulpLogger = require('gulplog'),
   glogg = require('glogg'),
   http = require('http'),
   https = require('https'),
@@ -20,7 +19,6 @@ var _ = require('lodash'),
   socket = require('socket.io'),
   url = require('url'),
   extend = require('node.extend');
-
 
 var BROWSER_SCIPTS_DIR = path.join(__dirname, 'browser-scripts');
 
@@ -47,7 +45,7 @@ function bindLogger(logLevel, kind) {
     })
     .forEach(function (level) {
       logger.on(level, function () {
-        gulpLogger.info.apply(gulpLogger, arguments);
+        gutil.log.apply(gutil.log, arguments);
       });
     });
 
