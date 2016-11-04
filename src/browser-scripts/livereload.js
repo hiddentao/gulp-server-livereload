@@ -6,8 +6,7 @@
     require = define = null;
   }
 
-
-  var __consoleLog = window.console.log;
+  var __consoleLog = window.console.log.bind(window.console);
   var __log = function(msg) {
     __consoleLog('LIVERELOAD: ' + msg);
   };
