@@ -40,8 +40,8 @@
 
 
   var __addUrlQueryParam = function(href, key, val) {
-    if (0 > href.indexOf('?')) {
-      href += '?';
+    if (0 > href.indexOf('#')) {
+      href += '#';
     } else {
       var pos = href.indexOf(key);
 
@@ -51,7 +51,7 @@
     }
 
     var lastChar = href.charAt(href.length-1);
-    if ('?' !== lastChar && '&' !== lastChar) {
+    if ('#' !== lastChar && '&' !== lastChar) {
       href += '&';
     }
 
@@ -100,6 +100,65 @@
   };
 
 
+  // Generate unique identifier
+  // Pseudo-elements can only be styled by CSS
+  // and CSS needs a selector. This helps make one
+  var __generateUID = function() {
+    var array = new Uint32Array(1);
+    return parseInt(window.crypto.getRandomValues(array));
+  };
+
+  var __newStylesheet = function(id) {
+    // Check DOM for already-addded LiveReload stylesheet and return it if it exists
+    if(document.getElementById(id)) { return document.getElementById(id).sheet; }
+    // If not create it
+    var style = document.createElement('style');
+    document.head.appendChild(style); // must append before you can access sheet property
+    style.id = id;
+
+    return style.sheet;
+  };
+  
+  var __getLiveAssets = function(nodelist, fileName) {
+    // nodelist is all the elements to search through
+    var arr = Array.from(nodelist),
+    results = [];
+
+    arr.forEach(function(el) {
+      // Get background-image computed styles for all elements and their pseudo-elements
+      // Heads up: getComputedStyle will introduce the protocol (http: or https:)
+      // even if you defined it protocol-relative
+      var elBg = window.getComputedStyle(el, null).backgroundImage;
+      var beforeBg = window.getComputedStyle(el, '::before').backgroundImage;
+      var afterBg = window.getComputedStyle(el, '::after').backgroundImage;
+      // RegEx pattern to check if asset URL is served from localhost
+      // and filename matches the one that triggered the change event
+      var re = new RegExp('^url\\([\'"]?(https?:)?\\/\\/(localhost|livereload|charts|192\.168\.0\.1).*' + fileName.replace(/\./g, '\\.'), 'i');
+      if (re.test(elBg)) {
+        // Valid element, so push to results
+        // .slice(5, -2) to clean up URL by removing url(" and ") from CSS value
+        // Regular hits just send the DOM node
+        results.push({el: el, url: elBg.slice(5, -2) });
+      }
+      if (re.test(beforeBg)) {
+        // Pseudo hits can't send the DOM node
+        // So they send a selector for use in crafting a new cssRule
+        // Generate unique identifier
+        var beforeUID = __generateUID();
+        // Make unique selector
+        el.setAttribute('data-pseudo', beforeUID);
+        // Push a different object to the results array,
+        // with the selector instead of the DOM node
+        results.push({ sel: '[data-pseudo="' + beforeUID + '"]::before', url: beforeBg.slice(5, -2) });
+      }
+      if (re.test(afterBg)) {
+        var afterUID = __generateUID();
+        el.setAttribute('data-pseudo', afterUID);
+        results.push({ sel: '[data-pseudo="' + afterUID + '"]::after', url: afterBg.slice(5, -2) });
+      }
+    });
+    return results;
+  };
 
 
   if (!window._onLiveReloadFileChanged) {
@@ -108,8 +167,55 @@
         return;
       }
 
+      // Media changed?
+      if (/\.(gif|jpg|jpeg|png|svg|webp)$/i.test(file.ext)) {
+        // Live assets from <img> tags
+        var imgTags = Array.from(document.images);
+        imgTags.forEach(function(imgTag) {
+          // Discard if it ain't our changed asset
+          if (imgTag.src.indexOf(file.name) >= 0 && !imgTag.complete) { return; }
+          if (/(https?:)?\/\/(localhost|livereload|charts|192\.168\.0\.1)/i.test(imgTag.currentSrc)) {
+            var src = imgTag.getAttribute('src');
+            src = __addUrlQueryParam(src, '_lf', (new Date()).toLocaleTimeString('en-GB'));
+            imgTag.setAttribute('src', src);
+            imgTag.addEventListener('load', function imgReloaded() {
+              __log('reloaded asset: ' + file.name);
+              imgTag.removeEventListener('load', imgReloaded);
+            });
+            // Disabled, too much chatter, only announce on img.
+            // __log('reloading asset: ' + file.name);
+          }
+        });
+        
+        // Live assets used with CSS background-image.
+        var allEls = document.querySelectorAll('body, body *');
+        var laEls = __getLiveAssets(allEls, file.name);
+        laEls.forEach(function(laEl) {
+          // Generate URL string with cache-busting parameter
+          var newUrl = __addUrlQueryParam(laEl.url, '_lf', (new Date()).toLocaleTimeString('en-GB'));
+          // Is the asset in an element's background-image?
+          if (laEl.hasOwnProperty('el')) {
+            // Cannot hope to set original CSS style declaration
+            // (computed styles are read-only), so just override
+            // using a style attribute on the element
+            laEl.el.style.backgroundImage = 'url(' + newUrl + ')';
+            __log('reloaded CSS asset: ' + file.name);
+          }
+          // Is the asset in a pseudo-element's background-image?
+          else if (laEl.hasOwnProperty('sel')) {
+            // TODO BUG: Fails if an element has both ::before and ::after pseudo-elements
+            var lrStylesheet = __newStylesheet('lrstyles');
+            // TODO: !important rules suck, no toggle in DevTools
+            lrStylesheet.insertRule(laEl.sel + ' { background-image: url(' + newUrl + ') !important; }', 0);
+            // Pop out the previous rule to prevent pollution
+            if(lrStylesheet.cssRules.length > 1) { lrStylesheet.deleteRule(1); }
+            __log('reloaded CSS pseudo asset: ' + file.name);
+          }
+        });
+      }
+
       // CSS changed?
-      if ('.css' === file.ext) {
+      else if ('.css' === file.ext) {
         var linkTags = document.querySelectorAll('link[rel="stylesheet"]');
 
         Array.prototype.forEach.call(linkTags, function(linkTag) {
@@ -120,7 +226,7 @@
             clone.setAttribute('href', href);
             // Only remove the original once the new one loads, to prevent FOUC
             clone.addEventListener('load', function () {
-              linkTag.parentElement.removeChild(linkTag)
+              linkTag.parentElement.removeChild(linkTag);
               __log('reloaded css: ' + file.name);
             });
             linkTag.parentElement.insertBefore(clone, linkTag.nextElementSibling);
@@ -136,7 +242,7 @@
       else {
         __reloadPage();
       }
-    }
+    };
   }
 
 
