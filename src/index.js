@@ -181,7 +181,7 @@ module.exports = function(options) {
       + "_lrscript.type = 'text/javascript';"
       + "_lrscript.defer = _lrscript.async = true;"
       + "_lrscript.src = '//' + ((" + markupHost + "||location.host).split(':')[0]) + ':"+config.livereload.port+"/livereload.js?"+snippetParams.join('&')+"';"
-      + "document.body.appendChild(_lrscript);"
+      + "document.documentElement.appendChild(_lrscript);"
       + "</script>";
 
     var prepend = function(w, s) {
