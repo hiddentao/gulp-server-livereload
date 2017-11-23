@@ -188,10 +188,6 @@ module.exports = function(options) {
       return s + w;
     };
 
-    var append = function(w, s) {
-      return w + s;
-    }
-
     app.use(inject({
       snippet: snippet,
       rules: [{
@@ -200,9 +196,6 @@ module.exports = function(options) {
       }, {
         match: /<\/html>/,
         fn: prepend
-      }, {
-        match: /<\!DOCTYPE.+>/,
-        fn: append
       }]
     }));
 
