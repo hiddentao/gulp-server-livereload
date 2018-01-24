@@ -1,8 +1,9 @@
-"use strict";
+'use strict';
 
 var _ = require('lodash'),
+  colors = require('ansi-colors'),
   through = require('through2'),
-  gutil = require('gulp-util'),
+  log = require('fancy-log'),
   glogg = require('glogg'),
   http = require('http'),
   https = require('https'),
@@ -22,12 +23,7 @@ var _ = require('lodash'),
 
 var BROWSER_SCIPTS_DIR = path.join(__dirname, 'browser-scripts');
 
-var levels = [
-  'error',
-  'warn',
-  'info',
-  'debug',
-];
+var levels = ['error', 'warn', 'info', 'debug'];
 var instanceNumber = 0;
 
 function bindLogger(logLevel, kind) {
@@ -40,12 +36,12 @@ function bindLogger(logLevel, kind) {
   }
 
   levels
-    .filter(function (item, i) {
+    .filter(function(item, i) {
       return i < logLevel;
     })
-    .forEach(function (level) {
-      logger.on(level, function () {
-        gutil.log.apply(gutil.log, arguments);
+    .forEach(function(level) {
+      logger.on(level, function() {
+        log.apply(log, arguments);
       });
     });
 
@@ -92,9 +88,9 @@ module.exports = function(options) {
       markupHost: null,
       port: 35729,
       filter: function(filename, cb) {
-        cb( !(/node_modules/.test(filename)) );
+        cb(!/node_modules/.test(filename));
       },
-      clientConsole: false,
+      clientConsole: false
     },
 
     // Middleware: Directory listing
@@ -110,12 +106,14 @@ module.exports = function(options) {
     // For possible options, see:
     //  https://github.com/andrewrk/connect-proxy
     proxies: []
-
   };
 
   // Deep extend user provided options over the all of the defaults
   // Allow shorthand syntax, using the enable property as a flag
-  var config = enableMiddlewareShorthand(defaults, options, ['directoryListing', 'livereload']);
+  var config = enableMiddlewareShorthand(defaults, options, [
+    'directoryListing',
+    'livereload'
+  ]);
 
   var logger = bindLogger(config.log, 'server');
   var clientLogger = bindLogger(config.clientLog, 'client');
@@ -124,12 +122,14 @@ module.exports = function(options) {
 
   var httpsOptions = {
     key: fs.readFileSync(config.https.key || __dirname + '/../ssl/dev-key.pem'),
-    cert: fs.readFileSync(config.https.cert || __dirname + '/../ssl/dev-cert.pem')
+    cert: fs.readFileSync(
+      config.https.cert || __dirname + '/../ssl/dev-cert.pem'
+    )
   };
 
-  var openInBrowser = function () {
+  var openInBrowser = function() {
     if (config.open === false) return;
-    open('http' + (config.https ? 's' : '') + '://' + config.host + ':' + config.port);
+    open(`http${config.https ? 's' : ''}://${config.host}:${config.port}`);
     openInBrowser = undefined;
   };
 
@@ -137,10 +137,10 @@ module.exports = function(options) {
   var app = connect();
 
   // Disable browser cache(fix #15)
-  app.use(function (req, res, next) {
-    res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
-    res.setHeader("Pragma", "no-cache");
-    res.setHeader("Expires", 0);
+  app.use(function(req, res, next) {
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', 0);
 
     next();
   });
@@ -159,7 +159,12 @@ module.exports = function(options) {
   }
   //  directory listing
   if (config.directoryListing.enable) {
-    app.use(serveIndex(path.resolve(config.directoryListing.path), config.directoryListing.options));
+    app.use(
+      serveIndex(
+        path.resolve(config.directoryListing.path),
+        config.directoryListing.options
+      )
+    );
   }
 
   // socket.io
@@ -167,7 +172,7 @@ module.exports = function(options) {
     var snippetParams = [];
 
     if (config.livereload.clientConsole) {
-      snippetParams.push("extra=capture-console");
+      snippetParams.push('extra=capture-console');
     }
 
     // If it wasn't provided, use the server host:
@@ -176,13 +181,14 @@ module.exports = function(options) {
       : null;
 
     var snippet =
-      "<script type=\"text/javascript\">"
-      + "var _lrscript = document.createElement('script');"
-      + "_lrscript.type = 'text/javascript';"
-      + "_lrscript.defer = _lrscript.async = true;"
-      + "_lrscript.src = '//' + ((" + markupHost + "||location.host).split(':')[0]) + ':"+config.livereload.port+"/livereload.js?"+snippetParams.join('&')+"';"
-      + "document.body.appendChild(_lrscript);"
-      + "</script>";
+      `
+<script type="text/javascript">
+var _lrscript = document.createElement('script');
+_lrscript.type = 'text/javascript';
+_lrscript.defer = _lrscript.async = true;
+_lrscript.src = '//' + ((${markupHost}||location.host).split(':')[0]) + ':${config.livereload.port}/livereload.js?${snippetParams.join('&')}';
+document.body.appendChild(_lrscript);
+</script>`;
 
     var prepend = function(w, s) {
       return s + w;
@@ -190,50 +196,56 @@ module.exports = function(options) {
 
     var append = function(w, s) {
       return w + s;
-    }
+    };
 
-    app.use(inject({
-      snippet: snippet,
-      rules: [{
-        match: /<\/body>/,
-        fn: prepend
-      }, {
-        match: /<\/html>/,
-        fn: prepend
-      }, {
-        match: /<\!DOCTYPE.+>/,
-        fn: append
-      }]
-    }));
+    app.use(
+      inject({
+        snippet: snippet,
+        rules: [
+          {
+            match: /<\/body>/,
+            fn: prepend
+          },
+          {
+            match: /<\/html>/,
+            fn: prepend
+          },
+          {
+            match: /<!DOCTYPE.+>/,
+            fn: append
+          }
+        ]
+      })
+    );
 
-    var io = config.livereload.io = socket();
+    var io = (config.livereload.io = socket());
     io.serveClient(true);
-    io.path("");
-    io.on('connection', function(socket){
+    io.path('');
+    io.on('connection', function(socket) {
       logger.info('Livereload client connected');
 
-      socket.on('console', function(params){
+      socket.on('console', function(params) {
         var method = params.method,
           data = params.data,
-          methodLabel = gutil.colors.green(method.toUpperCase()),
+          methodLabel = colors.green(method.toUpperCase()),
           translatedMethod = 'info';
 
         switch (method) {
           case 'error':
-            methodLabel = gutil.colors.red('ERROR');
+            methodLabel = colors.red('ERROR');
             translatedMethod = 'error';
             break;
           case 'warn':
-            methodLabel = gutil.colors.yellow('WARN');
+            methodLabel = colors.yellow('WARN');
             translatedMethod = 'warn';
             break;
           case 'info':
-            methodLabel = gutil.colors.cyan('INFO');
+            methodLabel = colors.cyan('INFO');
             translatedMethod = 'info';
             break;
           case 'debug':
           case 'trace':
-            methodLabel = gutil.colors.blue('DEBUG');
+            methodLabel = colors.blue('DEBUG');
             translatedMethod = 'debug';
             break;
         }
@@ -255,87 +267,104 @@ module.exports = function(options) {
       ? https.createServer(httpsOptions, ioApp)
       : http.createServer(ioApp);
 
-    var ioServer = config.livereload.ioServer =
-      ioServerBase.listen(config.livereload.port, config.host);
+    var ioServer = (config.livereload.ioServer = ioServerBase.listen(
+      config.livereload.port,
+      config.host
+    ));
 
     io.attach(ioServer, {
       path: '/socket.io'
     });
 
-    logger.debug('Livereload started at', gutil.colors.gray('http' + (config.https ? 's' : '') + '://' + config.host + ':' + config.livereload.port));
+    logger.debug(
+      'Livereload started at',
+      colors.gray(
+        'http' +
+          (config.https ? 's' : '') +
+          '://' +
+          config.host +
+          ':' +
+          config.livereload.port
+      )
+    );
   }
 
   // http server
   var webserver = null;
   if (config.https) {
     webserver = https.createServer(httpsOptions, app);
-  }
-  else {
+  } else {
     webserver = http.createServer(app);
   }
 
   var files = [];
 
   // Create server
-  var stream = through.obj(function(file, enc, callback) {
-    if ('debug' === config.log) {
-      app.use(function(req, res, next) {
-        logger.debug(req.method + ' ' + req.url);
+  var stream = through
+    .obj(function(file, enc, callback) {
+      if ('debug' === config.log) {
+        app.use(function(req, res, next) {
+          logger.debug(req.method + ' ' + req.url);
 
-        next();
-      });
-    }
+          next();
+        });
+      }
 
+      app.use(
+        serveStatic(file.path, {
+          index: config.directoryListing.enable ? false : config.defaultFile
+        })
+      );
 
-    app.use(serveStatic(file.path, {
-      index: (config.directoryListing.enable ? false : config.defaultFile)
-    }));
+      if (config.livereload.enable) {
+        watch(file.path, function(evt, filename) {
+          config.livereload.filter(filename, function(shouldReload) {
+            if (shouldReload) {
+              logger.debug('Livereload: file changed: ' + filename);
 
-    if (config.livereload.enable) {
-      watch(file.path, function(filename) {
-        config.livereload.filter(filename, function(shouldReload) {
-          if (shouldReload) {
-            logger.debug('Livereload: file changed: ' + filename);
+              config.livereload.io.sockets.emit('reload');
+              // Treat changes to sourcemaps as changes to the original files.
+              filename = filename.replace(/\.map$/, '');
 
-            config.livereload.io.sockets.emit('reload');
-            // Treat changes to sourcemaps as changes to the original files.
-            filename = filename.replace(/\.map$/, '');
+              config.livereload.io.sockets.emit('file_changed', {
+                path: filename,
+                name: path.basename(filename),
+                ext: path.extname(filename)
+              });
+            }
+          });
+        });
+      }
 
-            config.livereload.io.sockets.emit('file_changed', {
-              path: filename,
-              name: path.basename(filename),
-              ext: path.extname(filename),
+      this.push(file);
+
+      callback();
+    })
+    .on('data', function(f) {
+      files.push(f);
+
+      // start the web server
+      webserver.listen(config.port, config.host, openInBrowser);
+
+      logger.info(
+        'Webserver started at',
+        colors.cyan(
+          `http${config.https ? 's' : ''}://${config.host}:${config.port}`
+        )
+      );
+    })
+    .on('end', function() {
+      if (config.fallback) {
+        files.forEach(function(file) {
+          var fallbackFile = file.path + '/' + config.fallback;
+          if (fs.existsSync(fallbackFile)) {
+            app.use(function(req, res) {
+              return config.fallbackLogic(req, res, fallbackFile);
             });
           }
         });
-      });
-    }
-
-    this.push(file);
-
-    callback();
-  })
-  .on('data', function(f) {
-    files.push(f);
-
-    // start the web server
-    webserver.listen(config.port, config.host, openInBrowser);
-
-    logger.info('Webserver started at', gutil.colors.cyan('http' + (config.https ? 's' : '') + '://' + config.host + ':' + config.port));
-  })
-  .on('end', function(){
-    if (config.fallback) {
-      files.forEach(function(file){
-        var fallbackFile = file.path + '/' + config.fallback;
-        if (fs.existsSync(fallbackFile)) {
-          app.use(function(req, res) {
-            return config.fallbackLogic(req, res, fallbackFile);
-          });
-        }
-      });
-    }
-  });
-
+      }
+    });
 
   // once stream killed
   stream.on('kill', function() {
